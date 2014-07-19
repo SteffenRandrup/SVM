@@ -1,6 +1,7 @@
 *.exe*
 */bin
 */obj
+obj/*
 */Properties
 outdir/*
 kilder/*
