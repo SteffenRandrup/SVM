@@ -47,7 +47,8 @@
     <Compile Include="SVM.cs" />
     <!-- <Compile Include="Cholesky.cs" /> -->
     <Compile Include="Particle.cs" />
-    <!-- <Compile Include="Permutation.cs" /> -->
+    <Compile Include="Permutation.cs" />
+    <Compile Include="misc.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
