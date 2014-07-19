@@ -38,9 +38,9 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <!-- <Compile Include="Properties\AssemblyInfo.cs" /> -->
-    <!-- <Compile Include="vector.cs" /> -->
+    <Compile Include="vector.cs" />
     <!-- <Compile Include="qr.cs" /> -->
-    <!-- <Compile Include="matrix.cs" /> -->
+    <Compile Include="matrix.cs" />
     <!-- <Compile Include="jakobi.cs" /> -->
     <!-- <Compile Include="matrixElementFunctions.cs" /> -->
     <Compile Include="ProblemSetup.cs" />
