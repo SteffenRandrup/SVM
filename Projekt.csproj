@@ -42,7 +42,7 @@
     <Compile Include="qr.cs" />
     <Compile Include="matrix.cs" />
     <!-- <Compile Include="jakobi.cs" /> -->
-    <!-- <Compile Include="matrixElementFunctions.cs" /> -->
+    <Compile Include="MatrixElementFunctions.cs" />
     <Compile Include="ProblemSetup.cs" />
     <Compile Include="SVM.cs" />
     <!-- <Compile Include="Cholesky.cs" /> -->
