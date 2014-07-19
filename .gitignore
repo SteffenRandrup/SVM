@@ -1,0 +1,11 @@
+*.exe*
+*/bin
+*/obj
+*/Properties
+outdir/*
+kilder/*
+Program/Projekt/Projekt.sln
+Program/Projekt/Projekt.userprefs
+Program/Projekt/Projekt/Projekt.csproj
+Program/Projekt/Projekt/Properties/
+Program/Projekt/Projekt/obj/
