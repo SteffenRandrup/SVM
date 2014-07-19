@@ -10,6 +10,7 @@ public class ProblemSetup
   private double max; // Maximum guess value
   private matrix U;   // For linear transform r -> x
   private matrix U_inv; // U.inverse
+  private matrix Lambda;
 
   public ProblemSetup () {
     // Proton
@@ -21,6 +22,7 @@ public class ProblemSetup
     max = 1.5;
     U = generateU();
     U_inv = new QRdecomposition(U).inverse();
+    Lambda = generateLambda();
   }
 
   public ProblemSetup (String filename) {
@@ -55,6 +57,10 @@ public class ProblemSetup
     return U_inv.copy();
   }
 
+  public matrix getLambda() {
+    return Lambda;
+  }
+
   // Generates the U matrix
   private matrix generateU() {
     int L = particles.Count;
@@ -73,6 +79,25 @@ public class ProblemSetup
       }
     }
     return U;
+  }
+
+  // Generates the Lambda matrix
+  private matrix generateLambda() {
+    int nParticles = particles.Count;
+    matrix Lambda = new matrix(nParticles - 1, nParticles - 1);
+
+    for (int i = 0; i < nParticles - 1; i++) {
+      for (int j = 0; j < nParticles - 1; j++) {
+        double lambda_ij = 0;
+        for(int k = 0; k < nParticles; k++) {
+          lambda_ij += U[i,k] * U[j,k] / particles[k].getMass();
+        }
+        Lambda[i,j] = lambda_ij;
+      }
+    }
+
+
+    return Lambda;
   }
 
 }
