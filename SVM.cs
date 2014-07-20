@@ -14,6 +14,7 @@ public class SVM {
     mef = new MEF(problem);
     generateB(generateTestFunctions(5)).print();
     generateH(generateTestFunctions(5)).print();
+    eigenValues(generateTestFunctions(5)).print();
   }
 
   // Generate matrix containing non-linear parameters for the gaussian test
@@ -136,8 +137,8 @@ public class SVM {
     matrix B = new matrix(size,size);
     for(int i = 0; i < size; i++) {
       for (int j = 0; j < size; j++) {
-        matrix A = testFunctions[i];
-        matrix C = testFunctions[j];
+        matrix A = symmetrize(testFunctions[i]);
+        matrix C = symmetrize(testFunctions[j]);
         B[i,j] = mef.overlapElement(A,C);
       }
     }
@@ -152,11 +153,26 @@ public class SVM {
 
     for (int i=0; i < size; i++) {
       for (int j=0; j < size; j++) {
-        H[i,j] = mef.matrixElement(symmetrize(testFunctions[i]),symmetrize(testFunctions[j]));
+        H[i,j] = mef.matrixElement(testFunctions[i],testFunctions[j]);
         // Skal den ene af functionerne ikke symmetriseres?
       }
     }
     return H;
   }
+
+  // Calculate eigen values of system as specified in problem
+  private vector eigenValues(List<matrix> testFunctions) {
+    vector v = new vector(testFunctions.Count);
+    matrix H = generateH(testFunctions);
+    matrix B = generateB(testFunctions);
+    matrix L = new CholeskyDecomposition(B).L;
+    matrix inv = new QRdecomposition(L).inverse();
+    matrix inv_T = new QRdecomposition(L.transpose()).inverse();
+
+    jacobi.eigen(inv * H * inv_T, v);
+
+    return v;
+  }
+  
 
 }

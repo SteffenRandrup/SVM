@@ -41,11 +41,11 @@
     <Compile Include="vector.cs" />
     <Compile Include="qr.cs" />
     <Compile Include="matrix.cs" />
-    <!-- <Compile Include="jakobi.cs" /> -->
+    <Compile Include="jakobi.cs" />
     <Compile Include="MatrixElementFunctions.cs" />
     <Compile Include="ProblemSetup.cs" />
     <Compile Include="SVM.cs" />
-    <!-- <Compile Include="Cholesky.cs" /> -->
+    <Compile Include="Cholesky.cs" />
     <Compile Include="Particle.cs" />
     <Compile Include="Permutation.cs" />
     <Compile Include="misc.cs" />
