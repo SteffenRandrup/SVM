@@ -12,9 +12,46 @@ public class SVM {
     this.problem = problem;
     nParticles = problem.getNumberOfParticles();
     mef = new MEF(problem);
-    generateB(generateTestFunctions(5)).print();
-    generateH(generateTestFunctions(5)).print();
-    eigenValues(generateTestFunctions(5)).print();
+    vector eigs = run(8);
+    eigs.print();
+    String forprint = "";
+    for (int i = 0; i < eigs.size; i++) {
+      forprint += eigs[i] + "\n";
+    }
+    System.IO.StreamWriter file = new System.IO.StreamWriter("res.txt");
+    file.WriteLine(forprint);
+    file.Close();
+
+  }
+
+  private vector run(int repetitions) {
+    List<matrix> basis = generateTestFunctions(1);
+    double lowestEigen = eigenValues(basis)[0];
+    vector v = new vector(repetitions); 
+
+    for (int i = 0; i < repetitions; i++) {
+      List<matrix> tmpbasis = new List<matrix>(basis);
+      List<matrix> testFunctions = generateTestFunctions(50);
+
+      int j = 0;
+      foreach(matrix m in testFunctions) {
+        List<matrix> tmp = new List<matrix>(tmpbasis);
+        tmp.Add(m);
+        double eigen = eigenValues(tmp)[0];
+        /* Console.WriteLine(eigen); */
+        Console.Write(i);
+        Console.Write(j);
+        Console.WriteLine();
+        if (eigen < lowestEigen) {
+          lowestEigen = eigen;
+          basis = tmp;
+        }
+        j++;
+      }
+      v[i] = lowestEigen;
+    }
+
+    return v;
   }
 
   // Generate matrix containing non-linear parameters for the gaussian test
@@ -168,11 +205,8 @@ public class SVM {
     matrix L = new CholeskyDecomposition(B).L;
     matrix inv = new QRdecomposition(L).inverse();
     matrix inv_T = new QRdecomposition(L.transpose()).inverse();
-
     jacobi.eigen(inv * H * inv_T, v);
 
     return v;
   }
-  
-
 }
