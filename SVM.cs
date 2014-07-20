@@ -6,12 +6,14 @@ public class SVM {
   private ProblemSetup problem; // Class containing all info
   private int nParticles;
   private Random r = new Random();
+  private MEF mef;
 
   public SVM(ProblemSetup problem) {
     this.problem = problem;
     nParticles = problem.getNumberOfParticles();
-    MEF mef = new MEF(problem);
-    Console.WriteLine(mef.matrixElement(generateA(),generateA()));
+    mef = new MEF(problem);
+    generateB(generateTestFunctions(5)).print();
+    generateH(generateTestFunctions(5)).print();
   }
 
   // Generate matrix containing non-linear parameters for the gaussian test
@@ -83,7 +85,7 @@ public class SVM {
 
      matrix result = new matrix(A.rows,A.cols);
 
-     foreach(Permutation ps in perms(ll)) {
+     foreach(Permutation ps in Misc.permutations(ll)) {
        // Generate C_i according to the permutation and transform to jacobi
        matrix Ci = generateC(ps.ToArray());
        matrix tmp = problem.getUInverse() * Ci * problem.getU();
@@ -103,36 +105,6 @@ public class SVM {
      return 1/Math.Sqrt(Misc.factorial(A.rows)) * result;
   }
 
-  // Recursively generate a list of permutations.
-  // The permutation class contains the order and parity of a
-  // permutation.
-  private List<Permutation> perms(List<Permutation> permlist) {
-    List<Permutation> result = new List<Permutation>();
-    foreach (Permutation p in permlist) {
-      // If length is 1 there is only one permutation
-      if ( p.Length() == 1) {
-        result.Add(p.Clone());}
-      // If length is 2 swap the content
-      else if ( p.Length() == 2) {
-        result.Add(p.Clone());
-        result.Add(p.swap(0,1));}
-      // For every number in permutation remove it and generate
-      // permutation of the remaining. Then append them to the number
-      else {
-        for (int i = 0; i < p.Length(); i++) {
-          Permutation pc = p.Clone();
-          Permutation pp = pc.Pop(i);
-          List<Permutation> list = new List<Permutation>();
-          list.Add(pc);
-          foreach(Permutation put in perms(list)) {
-            result.Add(pp.Clone().Append(put));
-          }
-        }
-      }
-    }
-    return result;
-  }
-
   // Generate a matrix representing the given permutation
   private matrix generateC(int[] permutation) {
     matrix C = new matrix(nParticles,nParticles);
@@ -146,9 +118,45 @@ public class SVM {
     return C;
   }
 
-  private matrix generateB() {
-    return null;
+  // Generate a number of test functions to work as a basis
+  // for the system specified in problem
+  private List<matrix> generateTestFunctions(int number) {
+    List<matrix> testFunctions = new List<matrix>();
+    for (int i=0; i < number; i++) {
+      matrix a = generateA();
+      testFunctions.Add(a);
+    }
+
+    return testFunctions;
   }
 
+  // Generate the matrix B based on the given test functions
+  private matrix generateB(List<matrix> testFunctions) {
+    int size = testFunctions.Count;
+    matrix B = new matrix(size,size);
+    for(int i = 0; i < size; i++) {
+      for (int j = 0; j < size; j++) {
+        matrix A = testFunctions[i];
+        matrix C = testFunctions[j];
+        B[i,j] = mef.overlapElement(A,C);
+      }
+    }
+    return B;
+  }
+
+  // Generate the matrix H contain matrix elements of kinetic
+  // and potential energy combined
+  private matrix generateH(List<matrix> testFunctions) {
+    int size = testFunctions.Count;
+    matrix H = new matrix(size, size);
+
+    for (int i=0; i < size; i++) {
+      for (int j=0; j < size; j++) {
+        H[i,j] = mef.matrixElement(symmetrize(testFunctions[i]),symmetrize(testFunctions[j]));
+        // Skal den ene af functionerne ikke symmetriseres?
+      }
+    }
+    return H;
+  }
 
 }
