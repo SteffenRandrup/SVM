@@ -95,7 +95,7 @@ public class SVM {
 
   // Generate a list of permutations taking distinguishable particles into
   // account. That is protons and electrons won't be swapped
-  public List<Permutation> perm2 () {
+  public List<Permutation> permutations () {
     // Generate List of List of indistinguishable particles
     List<List<int>> listlist = new List<List<int>>();
     List<int> tmplist = new List<int>();
@@ -107,7 +107,11 @@ public class SVM {
       } else {
         listlist.Add(new List<int>(tmplist));
         tmplist = new List<int>();
+        tmplist.Add(i);
         p = problem.getParticles()[i];
+      }
+      if ( i == nParticles - 1) {
+        listlist.Add(new List<int>(tmplist));
       }
     }
 
@@ -119,20 +123,24 @@ public class SVM {
       llp.Add(Misc.permutations(permu));
     }
 
-    // Append all permutations of all groups to each other
-    // such that all allowed combinations are taken into account
+    // List containing all previous permutations
     List<Permutation> lp = new List<Permutation>();
-    for (int i = llp.Count; i > 1; i--) {
+
+    for (int i = llp.Count - 1; i > -1; i--) {
       List<Permutation> tmp = new List<Permutation>();
       foreach(Permutation per in llp[i]) {
-        Permutation pTemp = per.Clone();
-        foreach(Permutation per2 in lp) {
-          tmp.Add(pTemp.Clone().Append(per2));
+        Permutation clone = per.Clone();
+        if (lp.Count == 0) {
+          tmp.Add(clone);
+        }
+        foreach(Permutation peru in lp) {
+          Permutation clone2 = per.Clone();
+          clone2.Append(peru);
+          tmp.Add(clone2);
         }
       }
       lp = new List<Permutation>(tmp);
     }
-
     return lp;
   }
 
@@ -149,12 +157,13 @@ public class SVM {
 
      // Make a list with 1 permutation. It will be used for getting permutations
      // of
-     List<Permutation> ll = new List<Permutation>();
-     ll.Add(new Permutation(perm,1,-1)); // fermions
+     /* List<Permutation> ll = new List<Permutation>(); */
+     /* ll.Add(new Permutation(perm,1,-1)); // fermions */
 
      matrix result = new matrix(A.rows,A.cols);
 
-     foreach(Permutation ps in Misc.permutations(ll)) {
+     foreach (Permutation ps in permutations()) {
+     /* foreach(Permutation ps in Misc.permutations(ll)) { */
        // Generate C_i according to the permutation and transform to jacobi
        matrix Ci = generateC(ps.ToArray());
        matrix tmp = problem.getUInverse() * Ci * problem.getU();
@@ -205,8 +214,10 @@ public class SVM {
     matrix B = new matrix(size,size);
     for(int i = 0; i < size; i++) {
       for (int j = 0; j < size; j++) {
-        matrix A = symmetrize(testFunctions[i]);
-        matrix C = symmetrize(testFunctions[j]);
+        /* matrix A = symmetrize(testFunctions[i]); */
+        /* matrix C = symmetrize(testFunctions[j]); */
+        matrix A = testFunctions[i];
+        matrix C = testFunctions[j];
         B[i,j] = mef.overlapElement(A,C);
       }
     }
@@ -234,7 +245,7 @@ public class SVM {
     matrix H = generateH(testFunctions);
     matrix B = generateB(testFunctions);
     matrix L = new CholeskyDecomposition(B).L;
-    L.print();
+    /* L.print(); */
     matrix inv = new QRdecomposition(L).inverse();
     matrix inv_T = new QRdecomposition(L.transpose()).inverse();
     matrix i = inv * H;
