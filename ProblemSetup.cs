@@ -20,15 +20,47 @@ public class ProblemSetup
     particles.Add(new Particle(5.485*Math.Pow(10,-4), -1, 1/2));
     min = 0.1;
     max = 1.5;
-    U = generateU();
-    U_inv = new QRdecomposition(U).inverse();
-    Lambda = generateLambda();
-
-    particles.Sort();
+    setup();
   }
 
   public ProblemSetup (String filename) {
     // Read values from a file and set them to the ones above
+    string[] lines = System.IO.File.ReadAllLines(filename);
+    List<double> masses = new List<double>();
+    List<int> charges = new List<int>();
+    List<double> spin = new List<double>();
+
+    foreach(string m in lines[0].Split(',')) {
+      masses.Add(double.Parse(m.Trim()));
+    }
+    foreach(string q in lines[1].Split(',')) {
+      charges.Add(int.Parse(q.Trim()));
+    }
+    foreach(string s in lines[2].Split(',')) {
+      spin.Add(double.Parse(s.Trim()));
+    }
+    if (lines.Length == 4) {
+      min = double.Parse(lines[3].Split(',')[0].Trim());
+      max = double.Parse(lines[3].Split(',')[1].Trim());
+    } else {
+      min = 0.1;
+      max = 1.5;
+    }
+    if (masses.Count == charges.Count && masses.Count == spin.Count) {
+      for(int i = 0; i < masses.Count; i++) {
+        particles.Add(new Particle(masses[i],charges[i],spin[i]));
+      }
+    } else {
+      Console.WriteLine("Input is not of equal length -- erros might occour");
+    }
+    setup();
+  }
+
+  private void setup() {
+    particles.Sort();
+    U = generateU();
+    U_inv = new QRdecomposition(U).inverse();
+    Lambda = generateLambda();
   }
 
   // Return all the particles

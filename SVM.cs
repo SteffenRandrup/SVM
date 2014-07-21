@@ -13,20 +13,10 @@ public class SVM {
     nParticles = problem.getNumberOfParticles();
     mef = new MEF(problem);
 
-    /* for (int i = 0; i < 100; i++) { */
-      vector eigs = run(10);
-    /* eigs.print(); */
-      String forprint = "";
-      for (int j = 0; j < eigs.size; j++) {
-        forprint += eigs[j] +"\n";
-      }
-      System.IO.StreamWriter file = new System.IO.StreamWriter("../LaTeX/res.txt");
-      file.WriteLine(forprint);
-      file.Close();
-    /* } */
   }
 
-  private vector run(int repetitions) {
+  // Returns a vector containing the lowest eigen values for each basis size
+  public vector run(int repetitions) {
     List<matrix> basis = generateTestFunctions(1);
     double lowestEigen = eigenValues(basis)[0];
     vector v = new vector(repetitions);
@@ -105,8 +95,8 @@ public class SVM {
 
   // Generate a list of permutations taking distinguishable particles into
   // account. That is protons and electrons won't be swapped
-  private List<Permutation> perm2 () {
-    // Generate List of List of indistinguishable particles 
+  public List<Permutation> perm2 () {
+    // Generate List of List of indistinguishable particles
     List<List<int>> listlist = new List<List<int>>();
     List<int> tmplist = new List<int>();
     Particle p = problem.getParticles()[0];
@@ -129,6 +119,8 @@ public class SVM {
       llp.Add(Misc.permutations(permu));
     }
 
+    // Append all permutations of all groups to each other
+    // such that all allowed combinations are taken into account
     List<Permutation> lp = new List<Permutation>();
     for (int i = llp.Count; i > 1; i--) {
       List<Permutation> tmp = new List<Permutation>();
