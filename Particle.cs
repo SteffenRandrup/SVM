@@ -37,4 +37,11 @@ public class Particle : IComparable {
   public double getSpin() {
     return spin;
   }
+
+  public bool equals(Particle p) {
+    if (CompareTo(p) == 0) {
+      return true;
+    }
+    return false;
+  }
 }
