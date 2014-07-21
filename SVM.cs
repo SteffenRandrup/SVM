@@ -12,41 +12,37 @@ public class SVM {
     this.problem = problem;
     nParticles = problem.getNumberOfParticles();
     mef = new MEF(problem);
-    vector eigs = run(8);
-    eigs.print();
-    String forprint = "";
-    for (int i = 0; i < eigs.size; i++) {
-      forprint += eigs[i] + "\n";
-    }
-    System.IO.StreamWriter file = new System.IO.StreamWriter("res.txt");
-    file.WriteLine(forprint);
-    file.Close();
 
+    /* for (int i = 0; i < 100; i++) { */
+      vector eigs = run(10);
+    /* eigs.print(); */
+      String forprint = "";
+      for (int j = 0; j < eigs.size; j++) {
+        forprint += eigs[j] +"\n";
+      }
+      System.IO.StreamWriter file = new System.IO.StreamWriter("../LaTeX/res.txt");
+      file.WriteLine(forprint);
+      file.Close();
+    /* } */
   }
 
   private vector run(int repetitions) {
     List<matrix> basis = generateTestFunctions(1);
     double lowestEigen = eigenValues(basis)[0];
-    vector v = new vector(repetitions); 
+    vector v = new vector(repetitions);
 
-    for (int i = 0; i < repetitions; i++) {
+    for (int i = 0; i < repetitions - 1; i++) {
       List<matrix> tmpbasis = new List<matrix>(basis);
       List<matrix> testFunctions = generateTestFunctions(50);
 
-      int j = 0;
       foreach(matrix m in testFunctions) {
         List<matrix> tmp = new List<matrix>(tmpbasis);
         tmp.Add(m);
         double eigen = eigenValues(tmp)[0];
-        /* Console.WriteLine(eigen); */
-        Console.Write(i);
-        Console.Write(j);
-        Console.WriteLine();
         if (eigen < lowestEigen) {
           lowestEigen = eigen;
           basis = tmp;
         }
-        j++;
       }
       v[i] = lowestEigen;
     }
@@ -105,6 +101,49 @@ public class SVM {
 
     return result;
   }
+
+
+  // Generate a list of permutations taking distinguishable particles into
+  // account. That is protons and electrons won't be swapped
+  private List<Permutation> perm2 () {
+    // Generate List of List of indistinguishable particles 
+    List<List<int>> listlist = new List<List<int>>();
+    List<int> tmplist = new List<int>();
+    Particle p = problem.getParticles()[0];
+    tmplist.Add(0);
+    for(int i = 1; i < nParticles; i++) {
+      if (problem.getParticles()[i].equals(p)) {
+        tmplist.Add(i);
+      } else {
+        listlist.Add(new List<int>(tmplist));
+        tmplist = new List<int>();
+        p = problem.getParticles()[i];
+      }
+    }
+
+    // Generate List of List of permutations
+    List<List<Permutation>> llp = new List<List<Permutation>>();
+    foreach(List<int> list in listlist) {
+      List<Permutation> permu = new List<Permutation>();
+      permu.Add(new Permutation(list,1,-1)); // Need to change last parameter if boson
+      llp.Add(Misc.permutations(permu));
+    }
+
+    List<Permutation> lp = new List<Permutation>();
+    for (int i = llp.Count; i > 1; i--) {
+      List<Permutation> tmp = new List<Permutation>();
+      foreach(Permutation per in llp[i]) {
+        Permutation pTemp = per.Clone();
+        foreach(Permutation per2 in lp) {
+          tmp.Add(pTemp.Clone().Append(per2));
+        }
+      }
+      lp = new List<Permutation>(tmp);
+    }
+
+    return lp;
+  }
+
 
   // Symmetrize a matrix so that there is anti symmetry on swapping
   // indistinguishable fermions and symmetry on swapping indistinguishable
@@ -203,10 +242,12 @@ public class SVM {
     matrix H = generateH(testFunctions);
     matrix B = generateB(testFunctions);
     matrix L = new CholeskyDecomposition(B).L;
+    L.print();
     matrix inv = new QRdecomposition(L).inverse();
     matrix inv_T = new QRdecomposition(L.transpose()).inverse();
-    jacobi.eigen(inv * H * inv_T, v);
-
+    matrix i = inv * H;
+    matrix p = i * inv_T;
+    jacobi.eigen(p,v);
     return v;
   }
 }
