@@ -21,7 +21,6 @@
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
     <PlatformTarget>x86</PlatformTarget>
-		<Exec Command="./Projekt.exe"/>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>full</DebugType>
@@ -36,19 +35,23 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include ="*.cs" />
+    <!-- <Compile Include="Program.cs" /> -->
     <!-- <Compile Include="Properties\AssemblyInfo.cs" /> -->
-    <Compile Include="vector.cs" />
-    <Compile Include="qr.cs" />
-    <Compile Include="matrix.cs" />
-    <Compile Include="jakobi.cs" />
-    <Compile Include="MatrixElementFunctions.cs" />
-    <Compile Include="ProblemSetup.cs" />
-    <Compile Include="SVM.cs" />
-    <Compile Include="Cholesky.cs" />
-    <Compile Include="Particle.cs" />
-    <Compile Include="Permutation.cs" />
-    <Compile Include="misc.cs" />
+    <!-- <Compile Include="vector.cs" /> -->
+    <!-- <Compile Include="qr.cs" /> -->
+    <!-- <Compile Include="matrix.cs" /> -->
+    <!-- <Compile Include="jakobi.cs" /> -->
+    <!-- <Compile Include="MatrixElementFunctions.cs" /> -->
+    <!-- <Compile Include="ProblemSetup.cs" /> -->
+    <!-- <Compile Include="SVM.cs" /> -->
+    <!-- <Compile Include="Cholesky.cs" /> -->
+    <!-- <Compile Include="Particle.cs" /> -->
+    <!-- <Compile Include="Permutation.cs" /> -->
+    <!-- <Compile Include="misc.cs" /> -->
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Target Name="run">
+    <Exec Command="mono Projekt.exe"/>
+  </Target>
 </Project>
