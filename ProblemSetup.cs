@@ -14,15 +14,17 @@ public class ProblemSetup
 
   public ProblemSetup () {
     // Proton
-    particles.Add(new Particle(1,1,3/2));
+    /* particles.Add(new Particle(1,1,3/2)); */
     // Electron
-    particles.Add(new Particle(5.485*Math.Pow(10,4), -1, 1/2));
-    particles.Add(new Particle(5.485*Math.Pow(10,4), -1, 1/2));
+    particles.Add(new Particle(5.485*Math.Pow(10,-4), -1, 1/2));
+    particles.Add(new Particle(5.485*Math.Pow(10,-4), -1, 1/2));
     min = 0.1;
     max = 1.5;
     U = generateU();
     U_inv = new QRdecomposition(U).inverse();
     Lambda = generateLambda();
+
+    particles.Sort();
   }
 
   public ProblemSetup (String filename) {
