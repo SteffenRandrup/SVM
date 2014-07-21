@@ -95,7 +95,7 @@ public class SVM {
 
   // Generate a list of permutations taking distinguishable particles into
   // account. That is protons and electrons won't be swapped
-  public List<Permutation> permutations () {
+  private List<Permutation> permutations () {
     // Generate List of List of indistinguishable particles
     List<List<int>> listlist = new List<List<int>>();
     List<int> tmplist = new List<int>();
