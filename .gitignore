@@ -11,3 +11,5 @@ Program/Projekt/Projekt/Projekt.csproj
 Program/Projekt/Projekt/Properties/
 Program/Projekt/Projekt/obj/
 *.txt
+*.txt.res
+TestResult.xml
