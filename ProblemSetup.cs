@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using math = System.Math;
 
@@ -19,7 +20,17 @@ public class ProblemSetup
     particles.Add(new Particle(5.485*Math.Pow(10,-4), -1, 1/2));
     particles.Add(new Particle(5.485*Math.Pow(10,-4), -1, 1/2));
     min = 0.1;
-    max = 1.5;
+    max = 0.5;
+    setup();
+  }
+
+  public ProblemSetup(double[] masses, int[] charges, double[] spins, double min, double max) {
+    Debug.Assert( masses.Length == charges.Length && charges.Length == spins.Length );
+    for (int i = 0; i < masses.Length; i++) {
+      particles.Add(new Particle(masses[i],charges[i],spins[i]));
+    }
+    this.min = min;
+    this.max = max;
     setup();
   }
 
