@@ -12,14 +12,14 @@ public class SVM {
     this.problem = problem;
     nParticles = problem.getNumberOfParticles();
     mef = new MEF(problem);
-
   }
 
   // Returns a vector containing the lowest eigen values for each basis size
   public vector run(int repetitions) {
+
     List<matrix> basis = generateTestFunctions(1);
     double lowestEigen = eigenValues(basis)[0];
-    vector v = new vector(repetitions);
+    vector v = new vector(repetitions - 1);
 
     for (int i = 0; i < repetitions - 1; i++) {
       List<matrix> tmpbasis = new List<matrix>(basis);
@@ -42,17 +42,9 @@ public class SVM {
 
   // Generate matrix containing non-linear parameters for the gaussian test
   // functions transformed to center of mass system
-  private matrix generateA() {
+  public matrix generateA() {
     matrix A = new matrix(nParticles - 1, nParticles -1);
-    List<double> alphas = new List<double>(); // non-linear parameters
-    double min = problem.minGuess(); // Minimum value to look for parameters
-    double max = problem.maxGuess(); // Maximum value to look for parameters
-
-    // Prepare randdom values
-    for (int i = 0; i < nParticles * (nParticles - 1) / 2; i++) {
-      alphas.Add( r.NextDouble() * (max - min) + min);
-    }
-
+    List<double> alphas = makeAlphas();
     // Generate values for every entry in the matrix A
     for (int k = 0; k < nParticles - 1; k++) {
       for (int l = 0; l < nParticles - 1; l++) {
@@ -63,8 +55,22 @@ public class SVM {
     return A;
   }
 
+  public List<double> makeAlphas() {
+
+    List<double> alphas = new List<double>(); // non-linear parameters
+    double min = problem.minGuess(); // Minimum value to look for parameters
+    double max = problem.maxGuess(); // Maximum value to look for parameters
+
+    // Prepare randdom values
+    for (int i = 0; i < nParticles * (nParticles - 1) / 2; i++) {
+      alphas.Add( r.NextDouble() * (max - min) + min);
+    }
+
+    return alphas;
+  }
+
   // Generate the value in A belonging to spot A[k,l]
-  private double A_kl(int k, int l, List<double> alphas) {
+  public double A_kl(int k, int l, List<double> alphas) {
     double result = 0;
 
     matrix U_inv = problem.getUInverse(); // Get the inverse U matrix
@@ -95,7 +101,7 @@ public class SVM {
 
   // Generate a list of permutations taking distinguishable particles into
   // account. That is protons and electrons won't be swapped
-  private List<Permutation> permutations () {
+  public List<Permutation> permutations () {
     // Generate List of List of indistinguishable particles
     List<List<int>> listlist = new List<List<int>>();
     List<int> tmplist = new List<int>();
@@ -148,7 +154,7 @@ public class SVM {
   // Symmetrize a matrix so that there is anti symmetry on swapping
   // indistinguishable fermions and symmetry on swapping indistinguishable
   // bosons
-  private matrix symmetrize(matrix A) {
+  public matrix symmetrize(matrix A) {
     // Generate permutations of particles
      List<int> perm = new List<int>();
      for (int i = 0; i < nParticles; i++){
@@ -184,7 +190,7 @@ public class SVM {
   }
 
   // Generate a matrix representing the given permutation
-  private matrix generateC(int[] permutation) {
+  public matrix generateC(int[] permutation) {
     matrix C = new matrix(nParticles,nParticles);
     for(int i = 0; i < nParticles; i++) {
       for(int j = 0; j < nParticles; j++) {
@@ -198,7 +204,7 @@ public class SVM {
 
   // Generate a number of test functions to work as a basis
   // for the system specified in problem
-  private List<matrix> generateTestFunctions(int number) {
+  public List<matrix> generateTestFunctions(int number) {
     List<matrix> testFunctions = new List<matrix>();
     for (int i=0; i < number; i++) {
       matrix a = generateA();
@@ -209,7 +215,7 @@ public class SVM {
   }
 
   // Generate the matrix B based on the given test functions
-  private matrix generateB(List<matrix> testFunctions) {
+  public matrix generateB(List<matrix> testFunctions) {
     int size = testFunctions.Count;
     matrix B = new matrix(size,size);
     for(int i = 0; i < size; i++) {
@@ -226,25 +232,25 @@ public class SVM {
 
   // Generate the matrix H contain matrix elements of kinetic
   // and potential energy combined
-  private matrix generateH(List<matrix> testFunctions) {
+  public matrix generateH(List<matrix> testFunctions) {
     int size = testFunctions.Count;
     matrix H = new matrix(size, size);
 
     for (int i=0; i < size; i++) {
       for (int j=0; j < size; j++) {
         H[i,j] = mef.matrixElement(testFunctions[i],testFunctions[j]);
-        // Skal den ene af functionerne ikke symmetriseres?
       }
     }
     return H;
   }
 
   // Calculate eigen values of system as specified in problem
-  private vector eigenValues(List<matrix> testFunctions) {
+  public vector eigenValues(List<matrix> testFunctions) {
     vector v = new vector(testFunctions.Count);
     matrix H = generateH(testFunctions);
     matrix B = generateB(testFunctions);
     matrix L = new CholeskyDecomposition(B).L;
+    /* Console.WriteLine("L = "); */
     /* L.print(); */
     matrix inv = new QRdecomposition(L).inverse();
     matrix inv_T = new QRdecomposition(L.transpose()).inverse();

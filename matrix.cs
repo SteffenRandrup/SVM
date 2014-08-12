@@ -217,4 +217,18 @@ set{data[col]=value;}
     }
   }
 
+  public bool equals(matrix B) {
+    if (nrows != B.rows && nrows != B.cols){
+      return false;
+    }
+    for (int i = 0; i < nrows; i++) {
+      for (int j = 0; j < ncols; j++) {
+        if( this[i,j] != B[i,j]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
 }

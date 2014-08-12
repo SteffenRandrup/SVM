@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public static class Misc {
+public class Misc {
   public static int factorial(int i) {
     if (i < 0) return 1; // Bad but fuck it
     int result = 1;
@@ -38,6 +38,19 @@ public static class Misc {
       }
     }
     return result;
+  }
+
+  public static bool isSymmetric(matrix A) {
+    if (A.cols != A.rows) {return false;}
+    for(int i = 0; i < A.cols; i++) {
+      for(int j = 0; j < i; j++) {
+        if(A[i,j] != A[j,i]) {
+          System.Console.WriteLine(A[i,j] + " Does not equal " + A[j,i]);
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
 }
