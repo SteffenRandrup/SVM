@@ -26,7 +26,7 @@ public class MEF {
   }
 
   // Calculates the matrix element for the kinetic energy
-  private double kineticEnergyElement(matrix A, matrix B) {
+  public double kineticEnergyElement(matrix A, matrix B) {
     QRdecomposition qr = new QRdecomposition(A+B);
     matrix inverse = qr.inverse();
     return 3 * (A * inverse * B * problem.getLambda()).trace() * overlapElement(A,B);
@@ -34,13 +34,13 @@ public class MEF {
 
   // Calculate the matrix element of the potential energy
   // Currently only coulomb potential is supported
-  private double potentialEnergyElement(matrix A, matrix B) {
+  public double potentialEnergyElement(matrix A, matrix B) {
     return coulombPotentialEnergy(A,B);
   }
 
   // Calculate matrix element of a coulomb potential given the charges
   // of the elements
-  private double coulombPotentialEnergy(matrix A, matrix B) {
+  public double coulombPotentialEnergy(matrix A, matrix B) {
     double epsilon_0 = 1; // Unit is set to 1 maight want to make static units
     int N = problem.getNumberOfParticles() - 1; // For easier readability
     double result = 0;
