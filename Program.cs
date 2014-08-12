@@ -10,23 +10,24 @@ class MainClass {
   private static void StochasticVariationalMethod(string[] args) {
     SVM svm; // Class handling all aspects of SVM
     if (args.Length == 0) {
-      svm = new SVM(new ProblemSetup());
+      svm = new SVM(new ProblemSetup("hydrogen.txt"));
     } else {
       svm = new SVM(new ProblemSetup(args[0]));
     }
+    for (int i = 0; i < 10; i++) {
+      vector eigs = svm.run(7);
+    }
 
-    // Get converging eigen values
-    vector eigs = svm.run(5);
-    eigs.print();
-    /* String forprint = ""; */
+    String forprint = "";
 
-    /* for (int j = 0; j < eigs.size; j++) { */
-    /*   forprint += eigs[j] +"\n"; */
-    /* } */
+    for (int j = 0; j < eigs.size; j++) {
+      forprint += eigs[j] +"\n";
+    }
 
     /* System.IO.StreamWriter file = new System.IO.StreamWriter(args[0] + ".res"); */
-    /* file.WriteLine(forprint); */
-    /* file.Close(); */
+    System.IO.StreamWriter file = new System.IO.StreamWriter("hydrogen.txt.res");
+    file.WriteLine(forprint);
+    file.Close();
   }
 
   // Program running for Newton-Raphson root finding method
