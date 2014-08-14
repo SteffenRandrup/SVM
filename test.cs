@@ -41,10 +41,8 @@ public class TestSVM {
   }
 
   [Test]
-  /* [Ignore("It is symmetric until 16'th decimal")] */
   public void H_should_be_symmetric() {
     matrix H = svm.generateH(testfunctions);
-    H.print();
     Assert.IsTrue(Misc.isSymmetric(H));
   }
 
@@ -129,4 +127,80 @@ public class TestSVM {
     // Okay, that is not accurate/good testing, but close enough
   }
 
+  [Test]
+  public void Test_generate_C() {
+    int[] perm = {0,1,2,3};
+    matrix C = svm.generateC(perm);
+    matrix Cs = new matrix("1,0,0,0;0,1,0,0;0,0,1,0;0,0,0,1");
+    Assert.IsTrue(C.equals(Cs));
+  }
+
+  [Test]
+  public void Test_generate_C2() {
+    int[] perm = {1,0,3,2};
+    matrix C = svm.generateC(perm);
+    matrix Cs = new matrix("0,1,0,0;1,0,0,0;0,0,0,1;0,0,1,0");
+    Assert.IsTrue(C.equals(Cs));
+  }
+
+  [Test]
+  [Ignore("For some reason this does not work either")]
+  public void Test_generate_U() {
+    String u = "1,-1,0;" + 1/2.0 + "," + 1/2.0 + ",-1;" + 1/3.0 + "," + 1/3.0 + "," + 1/3.0;
+    Console.WriteLine("u= " + u);
+    matrix U = new matrix(u);
+    U.print();
+    problem.getU().print();
+    Assert.IsTrue(U.equals(problem.getU()));
+  }
+
+  [Test]
+  public void Test_generate_Lambda() {
+    Assert.IsTrue(problem.getLambda().equals(new matrix("2,0;0,1.5")));
+  }
+
+  [Test]
+  public void Test_transpose() {
+    matrix T = new matrix("1,2,3;4,5,6;7,8,9");
+    matrix transposed = new matrix("1,4,7;2,5,8;3,6,9");
+    Assert.IsTrue(T.transpose().equals(transposed));
+    Assert.IsTrue(T.equals(T.transpose().transpose()));
+  }
+
+  [Test]
+  [Ignore("I don't know why it does not work")]
+  public void Test_inverse() {
+    matrix A = new matrix("1,2,3;0,1,4;5,6,0");
+    QRdecomposition qr = new QRdecomposition(A);
+    matrix inv = qr.inverse();
+    matrix inverse = new matrix("-24,18,5;20,-15,-4;-5,4,1");
+    Assert.IsTrue(inv.equals(inverse));
+  }
+
+  [Test]
+  public void Test_factorial() {
+    int fact = 24;
+    int factorial = Misc.factorial(4);
+    Assert.AreEqual(fact,factorial);
+
+  }
+
+  [Test]
+  [Ignore("Not implemented yet")]
+  public void Test_symmetrise() {
+
+  }
+
+  [Test]
+  public void Test_permutations() {
+    List<Permutation> perms = svm.permutations();
+    int length = perms.Count;
+    Assert.AreEqual(length,2); // only two particles can be swapped
+    // should probably also test content
+  }
+
+  [Test]
+  [Ignore("Not implemented yet")]
+  public void Test_eigenvalue_function() {
+  }
 }
