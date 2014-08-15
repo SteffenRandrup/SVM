@@ -16,11 +16,13 @@ class CholeskyDecomposition
           sum += L[i,j] * L[k,j];
         }
         if ( i == k) {
+          // Do this to prevent NaN and +-Infinity
+          if (A[i,i] - sum <= 0) {throw new CholeskyException("Bad Cholesky");}
           L[i,k] = Math.Sqrt(A[i,i] - sum);
         } else {
           L[i,k] = 1 / L[k,k] * (A[i,k] - sum);
         }
       }
     }
-}
+  }
 }

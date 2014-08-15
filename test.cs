@@ -182,7 +182,7 @@ public class TestSVM {
     int fact = 24;
     int factorial = Misc.factorial(4);
     Assert.AreEqual(fact,factorial);
-
+    Assert.AreEqual(Misc.factorial(5),120);
   }
 
   [Test]
