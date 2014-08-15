@@ -17,6 +17,8 @@ public class SVM {
   public vector run(int repetitions) {
     List<matrix> basis = generateBasis(repetitions);
     double lowestEnergy = eigenValues(basis)[0];
+    List<double> eigens = new List<double>();
+    eigens.Add(lowestEnergy);
     for(int i = 0; i < basis.Count; i++) {
       foreach(matrix m in generateTestFunctions(50)) {
         List<matrix> tmpbasis = new List<matrix>(basis);
@@ -29,13 +31,19 @@ public class SVM {
           if (eigen < lowestEnergy) {
             basis = tmpbasis;
             lowestEnergy = eigen;
+            eigens.Add(lowestEnergy);
           }
         }
         catch (CholeskyException e) {
         }
       }
+
     }
-    return eigenValues(basis);
+    vector v = new vector(eigens.Count);
+    for(int i = 0; i < eigens.Count; i++) {
+      v[i] = eigens[i];
+    }
+    return v;
     /* List<matrix> basis = generateTestFunctions(1); */
 
     /* foreach(matrix m in generateTestFunctions(100)) { */
