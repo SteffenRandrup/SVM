@@ -22,7 +22,7 @@ public class ProblemSetup
     /* particles.Add(new Particle(5.485*Math.Pow(10,-4), -1, 1/2)); */
     /* particles.Add(new Particle(5.485*Math.Pow(10,-4), -1, 1/2)); */
     min = 0.1;
-    max = 0.5;
+    max = 2;
     setup();
   }
 
@@ -129,6 +129,7 @@ public class ProblemSetup
   }
 
   // Generates the Lambda matrix
+  // TODO: Check lambda
   private matrix generateLambda() {
     int nParticles = particles.Count;
     matrix Lambda = new matrix(nParticles - 1, nParticles - 1);
