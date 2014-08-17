@@ -59,6 +59,7 @@ public class MEF {
               double B_ijk = Uinv[i,k] - Uinv[j,k];
               double B_ijl = Uinv[i,l] - Uinv[j,l];
               p_ij += B_ijk * inverse[k,l] * B_ijl;
+              /* Console.WriteLine(p_ij); */
             }
           }
 
