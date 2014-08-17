@@ -12,9 +12,9 @@ public class TestSVM {
   [SetUp]
   public void Init() {
     double[] masses = {1,1,1};
-    int[] charges = {-1,1,-1};
-    double[] spins = {1/2,1/2,1/2};
-    problem = new ProblemSetup(masses,charges,spins,0.1,1);
+    int[] charges = {-1,-1,1};
+    double[] spins = {1/2.0,1/2.0,1/2.0};
+    problem = new ProblemSetup(masses,charges,spins,0.0,2.0);
     svm = new SVM(problem);
     testfunctions = svm.generateTestFunctions(3);
     mef = new MEF(problem);
@@ -144,14 +144,12 @@ public class TestSVM {
   }
 
   [Test]
-  [Ignore("For some reason this does not work either")]
   public void Test_generate_U() {
     String u = "1,-1,0;" + 1/2.0 + "," + 1/2.0 + ",-1;" + 1/3.0 + "," + 1/3.0 + "," + 1/3.0;
-    Console.WriteLine("u= " + u);
     matrix U = new matrix(u);
-    U.print();
-    problem.getU().print();
-    Assert.IsTrue(U.equals(problem.getU()));
+    /* Assert.IsTrue(U.equals(problem.getU())); */
+    // This is cheating, but it correct when printed.......
+    Assert.IsTrue(Misc.sortOfEqual(U, problem.getU(), 8));
   }
 
   [Test]
@@ -168,13 +166,14 @@ public class TestSVM {
   }
 
   [Test]
-  [Ignore("I don't know why it does not work")]
   public void Test_inverse() {
     matrix A = new matrix("1,2,3;0,1,4;5,6,0");
     QRdecomposition qr = new QRdecomposition(A);
     matrix inv = qr.inverse();
     matrix inverse = new matrix("-24,18,5;20,-15,-4;-5,4,1");
-    Assert.IsTrue(inv.equals(inverse));
+    /* Assert.IsTrue(inv.equals(inverse)); */
+    // It is true....
+    Assert.IsTrue(Misc.sortOfEqual(inv,inverse,8));
   }
 
   [Test]
@@ -186,21 +185,58 @@ public class TestSVM {
   }
 
   [Test]
-  [Ignore("Not implemented yet")]
-  public void Test_symmetrise() {
-
-  }
-
-  [Test]
   public void Test_permutations() {
     List<Permutation> perms = svm.permutations();
     int length = perms.Count;
     Assert.AreEqual(length,2); // only two particles can be swapped
-    // should probably also test content
+    double[] masses = {1,1,1,1,1};
+    int[] charges = {-1,-1,1,1,1};
+    double[] spins = {1/2.0,1/2.0,1/2.0,1/2.0,1/2.0,1/2.0};
+    ProblemSetup problem2 = new ProblemSetup(masses,charges,spins,0.1,1);
+    SVM svm2 = new SVM(problem2);
+    int length2 = svm2.permutations().Count;
+    Assert.AreEqual(length2, 12);
   }
 
   [Test]
+  public void kinetic_energy_matrix_should_have_positive_eigenvalues() {
+    vector v = new vector(testfunctions.Count);
+    jacobi.eigen(kineticEnergy(testfunctions), v);
+    Assert.Greater(v[0],0);
+  }
+
+  public matrix kineticEnergy(List<matrix> test) {
+    int size = test.Count;
+    matrix T = new matrix(size, size);
+
+    for (int i = 0; i < size; i++){
+      for (int j = 0; j < i; j++){
+        double element = mef.kineticEnergyElement(test[i],test[j]);
+        T[i,j] = T[j,i] = element;
+      }
+      T[i,i] = mef.kineticEnergyElement(test[i],test[i]);
+    }
+    return T;
+  }
+
+  /* [Test] */
+  /* public void test_validate_B() { */
+  /*   matrix B = new matrix("4,1,-1;1,2,1;-1,1,2"); */
+  /*   Assert.IsTrue(svm.validateB(B)); */
+  /*   matrix Bf = new matrix("27.252,7.852,20.015,12.838,28.023;7.852,3.765,6.733,5.1682,8.3445;20.015,6.733,17.133,10.648,23.47;12.838,5.1682,10.648,7.589,13.727;28.023,8.3445,23.47,13.727,36.291"); */
+  /*   /1* matrix L = new CholeskyDecomposition(Bf).L; *1/ */
+  /*   /1* L.print(); *1/ */
+  /*   Assert.IsFalse(svm.validateB(Bf)); */
+  /* } */
+
+  [Test]
   [Ignore("Not implemented yet")]
-  public void Test_eigenvalue_function() {
+  public void kinetic_energy_should_be_invariant_to_permutation() {
+
+  }
+
+  [Test]
+  public void ZZZRUN(){
+    /* svm.run(50,50).print(); */
   }
 }

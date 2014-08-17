@@ -16,7 +16,7 @@ class MainClass {
     } else {
       svm = new SVM(new ProblemSetup(args[0]));
     }
-    vector v = svm.run(20);
+    vector v = svm.run(20,20);
     v.print();
     String forprint = "";
     for(int i = 0; i < v.size; i++) {

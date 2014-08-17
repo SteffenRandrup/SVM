@@ -14,97 +14,103 @@ public class SVM {
     mef = new MEF(problem);
   }
 
-  public vector run(int repetitions) {
-    List<matrix> basis = generateBasis(repetitions);
-    double lowestEnergy = eigenValues(basis)[0];
-    List<double> eigens = new List<double>();
-    eigens.Add(lowestEnergy);
-    for(int i = 0; i < basis.Count; i++) {
-      foreach(matrix m in generateTestFunctions(50)) {
+  public vector run(int size, int testsize) {
+    double E0 = double.PositiveInfinity;
+    List<matrix> basis = new List<matrix>();
+    vector result = new vector(size);
+    for(int i = 0; i < size; i++) {
+      List<matrix> testfunctions = generateTestFunctions(testsize);
+      List<matrix> bestBasisSoFar = new List<matrix>(basis);;
+      for (int j = 0; j < testfunctions.Count; j++) {
         List<matrix> tmpbasis = new List<matrix>(basis);
-        tmpbasis[i] = m;
-        try {
-          matrix B = generateB(tmpbasis);
-          matrix L = new CholeskyDecomposition(B).L;
-          // Only get here if cholesky is possible
-          double eigen = eigenValues(tmpbasis)[0];
-          if (eigen < lowestEnergy) {
-            basis = tmpbasis;
-            lowestEnergy = eigen;
-            eigens.Add(lowestEnergy);
+        tmpbasis.Add(testfunctions[j]);
+        /* if (validateB(generateB(tmpbasis))){ */
+          vector v = eigenValues(tmpbasis);
+          if (v[0] < E0) {
+            bestBasisSoFar = tmpbasis;
+            E0 = v[0];
           }
-        }
-        catch (CholeskyException e) {
-        }
-      }
-
-    }
-    vector v = new vector(eigens.Count);
-    for(int i = 0; i < eigens.Count; i++) {
-      v[i] = eigens[i];
-    }
-    return v;
-    /* List<matrix> basis = generateTestFunctions(1); */
-
-    /* foreach(matrix m in generateTestFunctions(100)) { */
-    /*   List<matrix> tmpbasis = new List<matrix>(basis); */
-    /*   tmpbasis[0] = m; */
-    /*   try { */
-    /*     matrix B = generateB(tmpbasis); */
-    /*     matrix L = new CholeskyDecomposition(B).L; */
-    /*   } catch (CholeskyException ce) { */
-    /*     Console.WriteLine("Bad Cholsky trying new one"); */
-    /*   } */
-    /* } */
-    /* return new vector(repetitions); */
-  }
-
-  // Generate the first basis to be optimized
-  public List<matrix> generateBasis(int size) {
-    List<matrix> basis = generateTestFunctions(1);
-    while (basis.Count < size) {
-      List<matrix> tmpbasis = new List<matrix>(basis);
-      try {
-        matrix A = generateA();
-        tmpbasis.Add(A);
-        matrix B = generateB(tmpbasis);
-        matrix L = new CholeskyDecomposition(B).L; // may throw exception
-        /* if (basis.Count == size -1) { */
-        /*   L.print(); */
         /* } */
-        basis.Add(A);
-      } catch (CholeskyException cs) {
-        Console.WriteLine("Bad Cholesky at basis size " + basis.Count);
       }
+      result[i] = E0;
+      basis = bestBasisSoFar;
     }
-    return basis;
+    return result;
   }
 
-  // Returns a vector containing the lowest eigen values for each basis size
-  /* public vector run(int repetitions) { */
+  public matrix permute(matrix M, Permutation p) {
+    // TODO implement permutating a single matrix according to permu
+    return null;
+  }
 
-  /*   List<matrix> basis = generateTestFunctions(1); */
+
+  /* public vector run(int reps) { */
+  /*   List<matrix> basis = generateBasis(reps); */
+  /*   int count = 1; */
+  /*   bool changed = false; */
   /*   double lowestEigen = eigenValues(basis)[0]; */
-  /*   vector v = new vector(repetitions - 1); */
-
-  /*   for (int i = 0; i < repetitions - 1; i++) { */
-  /*     List<matrix> tmpbasis = new List<matrix>(basis); */
-  /*     List<matrix> testFunctions = generateTestFunctions(50); */
-
-  /*     foreach(matrix m in testFunctions) { */
-  /*       List<matrix> tmp = new List<matrix>(tmpbasis); */
-  /*       tmp.Add(m); */
-  /*       double eigen = eigenValues(tmp)[0]; */
-  /*       if (eigen < lowestEigen) { */
-  /*         lowestEigen = eigen; */
-  /*         basis = tmp; */
+  /*   List<double> eigens = new List<double>(); */
+  /*   eigens.Add(lowestEigen); */
+  /*   Console.WriteLine(); */
+  /*   Console.WriteLine("Lowest eigen value is " + lowestEigen); */
+  /*   Console.WriteLine(); */
+  /*   for (int i = 0; i < basis.Count; i++) { */
+  /*     while (!changed) { */
+  /*       List<matrix> tmpbasis = new List<matrix>(basis); */
+  /*       tmpbasis[i] = generateTestFunctions(1)[0]; */
+  /*       if (validateB(generateB(tmpbasis))) { */
+  /*         double energy = eigenValues(tmpbasis)[0]; */
+  /*         if (energy < lowestEigen) { */
+  /*           changed = true; */
+  /*           lowestEigen = energy; */
+  /*           basis = tmpbasis; */
+  /*           Console.WriteLine("Changed"); */
+  /*           eigens.Add(energy); */
+  /*         } */
   /*       } */
+  /*       count++; */
   /*     } */
-  /*     v[i] = lowestEigen; */
-  /*     Console.WriteLine("lowest eigenvalue is " + v[i] + " at repetition " + i); */
+  /*     changed = false; */
   /*   } */
 
+  /*   Console.WriteLine("Number of trial functions = " + count); */
+
+  /*   vector v = new vector(eigens.Count); */
+  /*   for (int i = 0; i < eigens.Count; i++) { */
+  /*     v[i] = eigens[i]; */
+  /*   } */
   /*   return v; */
+  /* } */
+
+  // Generate a basis which can be cholesky factorised
+  /* public List<matrix> generateBasis(int size) { */
+  /*   List<matrix> basis = generateTestFunctions(1); */
+  /*   while(basis.Count < size) { */
+  /*     List<matrix> tmpbasis = new List<matrix>(basis); */
+  /*     tmpbasis.Add(generateTestFunctions(1)[0]); */
+  /*     matrix B = generateB(tmpbasis); */
+  /*     if (validateB(B)) { */
+  /*       basis = tmpbasis; */
+  /*     } */
+  /*   } */
+  /*   return basis; */
+  /* } */
+
+  // Ensure the eigenvalues of B are greater than 0.01
+  // to prevent too much correlation of basis functions
+  /* public bool validateB(matrix B) { */
+  /*   vector v = new vector(B.cols); */
+  /*   jacobi.eigen(B.copy(),v); */
+  /*   if (v[0] > 0.1) { */
+  /*     try { */
+  /*       new CholeskyDecomposition(B); */
+  /*       return true; */
+  /*     } catch (CholeskyException e) { */
+  /*       Console.WriteLine(e); */
+  /*       return false; */
+  /*     } */
+  /*   } */
+  /*   return false; */
   /* } */
 
   // Generate matrix containing non-linear parameters for the gaussian test
@@ -125,7 +131,7 @@ public class SVM {
       A[k,k] = A_kl(k,k,alphas);
     }
 
-    return symmetrize(A);
+    return A;
   }
 
   public List<double> makeAlphas() {
@@ -234,18 +240,18 @@ public class SVM {
       perm.Add(i);
     }
 
-    // Make a list with 1 permutation. It will be used for getting permutations
-    // of
+    // Make a list with 1 permutation. It will be used for getting permutations of
     /* List<Permutation> ll = new List<Permutation>(); */
     /* ll.Add(new Permutation(perm,1,-1)); // fermions */
 
     matrix result = new matrix(A.rows,A.cols);
 
     foreach (Permutation ps in permutations()) {
-    /* foreach(Permutation ps in Misc.permutations(ll)) { */
       // Generate C_i according to the permutation and transform to jacobi
       matrix Ci = generateC(ps.ToArray());
       matrix tmp = problem.getUInverse() * Ci * problem.getU();
+      /* matrix tmp = problem.getUInverse().transpose() * Ci * problem.getU(); */
+      /* matrix tmp = problem.getU().transpose() * Ci * problem.getU(); */
       matrix Pi = new matrix(A.rows, A.cols);
 
       // Remove last row and column from matrix
@@ -255,8 +261,29 @@ public class SVM {
         }
       }
 
+      /* Console.WriteLine("Pi = "); */
+      /* Pi.print(); */
+
+      int[] permus = ps.ToArray();
+      matrix Tp = new matrix(A.rows,A.cols);
+      for(int i = 0; i < Tp.rows; i++) {
+        for(int j = 0; j < Tp.cols; j++) {
+          double entry = 0;
+          matrix U = problem.getU();
+          matrix U_inv = problem.getUInverse();
+          for(int k = 0; k < permus.Length; k++) {
+            entry += U[i,k]*U_inv[permus[k],j];
+          }
+          Tp[i,j] = entry;
+        }
+      }
+      /* Console.WriteLine("Tp = "); */
+      /* Tp.print(); */
+
+
       // There might be an issue with size here
-      result += ps.Parity() * (Pi.transpose() *A * Pi);
+      /* result += ps.Parity() * (Pi.transpose() *A * Pi); */
+      result += ps.Parity() * (Tp.transpose() * A * Tp.transpose());
     }
 
     return 1/Math.Sqrt(Misc.factorial(A.rows)) * result;
@@ -281,6 +308,8 @@ public class SVM {
   public List<matrix> generateTestFunctions(int number) {
     List<matrix> testFunctions = new List<matrix>();
     for (int i=0; i < number; i++) {
+      // TODO symmetriseringen virker ikke...
+      /* matrix a = symmetrize(generateA()); */
       matrix a = generateA();
       testFunctions.Add(a);
     }

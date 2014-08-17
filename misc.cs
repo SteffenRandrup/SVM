@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 
 public class Misc {
   public static int factorial(int i) {
@@ -48,6 +49,16 @@ public class Misc {
           System.Console.WriteLine(A[i,j] + " Does not equal " + A[j,i]);
           return false;
         }
+      }
+    }
+    return true;
+  }
+
+  public static bool sortOfEqual(matrix A, matrix B, int precision) {
+    if (!(A.cols == B.cols && A.rows == B.rows)) { return false; }
+    for(int i = 0; i < A.cols; i++) {
+      for(int j = 0; j < A.rows; j++) {
+        if(!(Math.Round(A[i,j], precision) == Math.Round(B[i,j], precision))) { return false; }
       }
     }
     return true;

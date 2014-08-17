@@ -108,7 +108,7 @@ public class matrix{
 //			s+=a.data[k+ir*ar]*b.data[k+ic*br];
         c.data[ir+ic*ar]=s;
       }
-    /*			
+    /*
     {
   double s=0; int ar=a.rows;
   for(int k=0;k<ar;k++)
@@ -130,7 +130,7 @@ public class matrix{
     return c;
   }
 
-  /*		
+  /*
 public int rows(){return data[0].size;}
 public int cols(){return data.GetLength(0);}
 */
@@ -142,7 +142,7 @@ public int cols(){return data.GetLength(0);}
   }
 
 
-  /*		
+  /*
 public vector this[int col]{
 get{return data[col];}
 set{data[col]=value;}
