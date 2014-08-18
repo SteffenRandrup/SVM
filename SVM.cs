@@ -24,13 +24,20 @@ public class SVM {
       for (int j = 0; j < testfunctions.Count; j++) {
         List<matrix> tmpbasis = new List<matrix>(basis);
         tmpbasis.Add(testfunctions[j]);
-        /* if (validateB(generateB(tmpbasis))){ */
+        if (validateB(generateB(tmpbasis))){
+        /* try { */
           vector v = eigenValues(tmpbasis);
           if (v[0] < E0) {
             bestBasisSoFar = tmpbasis;
             E0 = v[0];
           }
+        /* } catch (CholeskyException ce) { */
+        /*   Console.WriteLine(ce); */
         /* } */
+        } else {
+          // Maybe add a new function to try
+          /* testfunctions.AddRange(generateTestFunctions(1)); */
+        }
       }
       result[i] = E0;
       basis = bestBasisSoFar;
@@ -39,9 +46,9 @@ public class SVM {
   }
 
   public matrix permute(matrix M, Permutation p) {
-    // TODO implement permutating a single matrix according to permu
     matrix Ci = generateC(p.ToArray());
-    matrix tmp = problem.getU().transpose() * Ci * problem.getU();
+    /* matrix tmp = problem.getU().transpose() * Ci * problem.getU(); */
+    matrix tmp = problem.getU() * Ci * problem.getUInverse();
     matrix T = new matrix(M.rows, M.cols);
     for(int i = 0; i < M.rows; i++) {
       for(int j = 0; j < M.cols; j++) {
@@ -107,20 +114,20 @@ public class SVM {
 
   // Ensure the eigenvalues of B are greater than 0.01
   // to prevent too much correlation of basis functions
-  /* public bool validateB(matrix B) { */
-  /*   vector v = new vector(B.cols); */
-  /*   jacobi.eigen(B.copy(),v); */
-  /*   if (v[0] > 0.1) { */
-  /*     try { */
-  /*       new CholeskyDecomposition(B); */
-  /*       return true; */
-  /*     } catch (CholeskyException e) { */
-  /*       Console.WriteLine(e); */
-  /*       return false; */
-  /*     } */
-  /*   } */
-  /*   return false; */
-  /* } */
+  public bool validateB(matrix B) {
+    vector v = new vector(B.cols);
+    jacobi.eigen(B.copy(),v);
+    /* if (v[0] > 0.1) { */
+      try {
+        new CholeskyDecomposition(B);
+        return true;
+      } catch (CholeskyException e) {
+        Console.WriteLine(e);
+        return false;
+      }
+    /* } */
+    /* return false; */
+  }
 
   // Generate matrix containing non-linear parameters for the gaussian test
   // functions transformed to center of mass system
@@ -439,13 +446,17 @@ public class SVM {
   // Calculate eigen values of system as specified in problem
   public vector eigenValues(List<matrix> testFunctions) {
     vector v = new vector(testFunctions.Count);
-    matrix H = generateH(testFunctions);
-    matrix B = generateB(testFunctions);
-    matrix L = new CholeskyDecomposition(B).L;
-    matrix inv = new QRdecomposition(L).inverse();
-    matrix inv_T = new QRdecomposition(L.transpose()).inverse();
-    matrix p = inv * H * inv_T;
-    jacobi.eigen(p,v);
+    /* try { */
+      matrix H = generateH(testFunctions);
+      matrix B = generateB(testFunctions);
+      matrix L = new CholeskyDecomposition(B).L;
+      matrix inv = new QRdecomposition(L).inverse();
+      matrix inv_T = new QRdecomposition(L.transpose()).inverse();
+      matrix p = inv * H * inv_T;
+      jacobi.eigen(p,v);
+    /* } catch (CholeskyException ce) { */
+    /*   Console.WriteLine(ce); */
+    /* } */
     return v;
   }
 }

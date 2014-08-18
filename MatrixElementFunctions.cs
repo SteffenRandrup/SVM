@@ -29,7 +29,7 @@ public class MEF {
   public double kineticEnergyElement(matrix A, matrix B) {
     QRdecomposition qr = new QRdecomposition(A+B);
     matrix inverse = qr.inverse();
-    return 3 * (A * inverse * B * problem.getLambda()).trace() * overlapElement(A,B);
+    return 3/2 * (A * inverse * B * problem.getLambda()).trace() * overlapElement(A,B);
   }
 
   // Calculate the matrix element of the potential energy
@@ -42,31 +42,51 @@ public class MEF {
   // of the elements
   public double coulombPotentialEnergy(matrix A, matrix B) {
     double epsilon_0 = 1; // Unit is set to 1 maight want to make static units
-    int N = problem.getNumberOfParticles() - 1; // For easier readability
+    /* int N = problem.getNumberOfParticles() - 1; // For easier readability */
+    int N = problem.getNumberOfParticles();
     double result = 0;
 
 
     matrix inverse = new QRdecomposition(A+B).inverse();
     // For every particle pair (only counting once) calculate interaction
     List<Particle> particles = problem.getParticles();
-    for (int i = 0; i < N; i++) {
-      for(int j = 0; j < N; j++) {
-        if ( j > i) {
-          double p_ij = 0;
-          matrix Uinv = problem.getUInverse();
-          for (int k = 0; k < N; k++) {
-            for (int l = 0; l < N; l++) {
-              double B_ijk = Uinv[i,k] - Uinv[j,k];
-              double B_ijl = Uinv[i,l] - Uinv[j,l];
-              p_ij += B_ijk * inverse[k,l] * B_ijl;
-              /* Console.WriteLine(p_ij); */
-            }
+    for (int j = 0; j < N; j++) {
+      for (int i = 0; i < j; i++) {
+        double p_ij = 0;
+        matrix Uinv = problem.getUInverse();
+        for (int k = 0; k < N - 1; k++) {
+          for (int l = 0; l < N - 1; l++) {
+            double b_ijk = Uinv[i,k] - Uinv[j,k];
+            double b_ijl = Uinv[i,l] - Uinv[j,l];
+            p_ij += b_ijk * inverse[k,l] * b_ijl;
+            /* Console.WriteLine("p_ij = " + p_ij); */
           }
-
-          result += particles[i].getCharge() * particles[j].getCharge() / (4 * Math.PI * epsilon_0) * Math.Sqrt( 1 / (2 * p_ij * Math.PI)) * overlapElement(A,B);
         }
+        /* Console.WriteLine("Using particle " + i + " and " + j); */
+        result += particles[i].getCharge() * particles[j].getCharge() / (4 * Math.PI * epsilon_0) * Math.Sqrt(1 / (2 * p_ij * Math.PI)) * overlapElement(A,B);
+        /* Console.WriteLine("result = " + result); */
       }
     }
+    /* for (int i = 0; i < N; i++) { */
+    /*   for(int j = 0; j < N; j++) { */
+    /*     if ( j > i) { */
+    /*       double p_ij = 0; */
+    /*       matrix Uinv = problem.getUInverse(); */
+    /*       for (int k = 0; k < N; k++) { */
+    /*         for (int l = 0; l < N; l++) { */
+    /*           double B_ijk = Uinv[i,k] - Uinv[j,k]; */
+    /*           double B_ijl = Uinv[i,l] - Uinv[j,l]; */
+    /*           p_ij += B_ijk * inverse[k,l] * B_ijl; */
+    /*           /1* Console.WriteLine(p_ij); *1/ */
+    /*         } */
+    /*       } */
+
+    /*       result += particles[i].getCharge() * particles[j].getCharge() / (4 * Math.PI * epsilon_0) * Math.Sqrt( 1 / (2 * p_ij * Math.PI)) * overlapElement(A,B); */
+    /*       Console.WriteLine("Result = " + result); */
+    /*     } */
+    /*   } */
+    /* } */
+    /* Console.WriteLine("Result is now = " + result); */
 
     return result;
   }
