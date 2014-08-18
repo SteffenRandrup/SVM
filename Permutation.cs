@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 public class Permutation{
-  
+
   private int parity = 1;
   private int pf;
   private List<int> perm;

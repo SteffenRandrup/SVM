@@ -237,6 +237,14 @@ public class TestSVM {
 
   [Test]
   public void ZZZRUN(){
-    /* svm.run(50,50).print(); */
+    svm.run(20,50).print();
+    /* List<matrix> testf = svm.generateTestFunctions(10); */
+    /* matrix B = svm.generateB(testf); */
+    /* B.print(); */
+    /* matrix L = new CholeskyDecomposition(B).L; */
+    /* L.print(); */
+    /* matrix H = svm.generateH(testf); */
+    /* H.print(); */
+    /* svm.eigenValues(testf).print(); */
   }
 }

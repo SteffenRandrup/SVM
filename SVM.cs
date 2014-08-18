@@ -40,7 +40,16 @@ public class SVM {
 
   public matrix permute(matrix M, Permutation p) {
     // TODO implement permutating a single matrix according to permu
-    return null;
+    matrix Ci = generateC(p.ToArray());
+    matrix tmp = problem.getU().transpose() * Ci * problem.getU();
+    matrix T = new matrix(M.rows, M.cols);
+    for(int i = 0; i < M.rows; i++) {
+      for(int j = 0; j < M.cols; j++) {
+        T[i,j] = tmp[i,j];
+      }
+    }
+    matrix result = T * M * T.transpose();
+    return result;
   }
 
 
@@ -235,10 +244,10 @@ public class SVM {
   // bosons
   public matrix symmetrize(matrix A) {
     // Generate permutations of particles
-    List<int> perm = new List<int>();
-    for (int i = 0; i < nParticles; i++){
-      perm.Add(i);
-    }
+    /* List<int> perm = new List<int>(); */
+    /* for (int i = 0; i < nParticles; i++){ */
+    /*   perm.Add(i); */
+    /* } */
 
     // Make a list with 1 permutation. It will be used for getting permutations of
     /* List<Permutation> ll = new List<Permutation>(); */
@@ -318,51 +327,115 @@ public class SVM {
   }
 
   // Generate the matrix B based on the given test functions
+/* public matrix generateB(List<matrix> testFunctions) { */
+  /*   int size = testFunctions.Count; */
+  /*   matrix B = new matrix(size,size); */
+  /*   for(int i = 0; i < size; i++) { */
+  /*     /1* for (int j = 0; j < size; j++) { *1/ */
+  /*     /1*   matrix A = testFunctions[i]; *1/ */
+  /*     /1*   matrix C = testFunctions[j]; *1/ */
+  /*     /1*   B[i,j] = mef.overlapElement(A,C); *1/ */
+  /*     /1* } *1/ */
+  /*     matrix A = testFunctions[i]; */
+  /*     for (int j = 0; j < i; j++) { */
+  /*       matrix C = testFunctions[j]; */
+  /*       double element = mef.overlapElement(A,C); */
+  /*       B[i,j] = element; */
+  /*       B[j,i] = element; */
+  /*     } */
+  /*     B[i,i] = mef.overlapElement(A,A); */
+  /*   } */
+  /*   return B; */
+  /* } */
+
+
+  // Generate B symmetrized
   public matrix generateB(List<matrix> testFunctions) {
     int size = testFunctions.Count;
+    List<Permutation> perms = permutations();
     matrix B = new matrix(size,size);
-    for(int i = 0; i < size; i++) {
-      /* for (int j = 0; j < size; j++) { */
-      /*   matrix A = testFunctions[i]; */
-      /*   matrix C = testFunctions[j]; */
-      /*   B[i,j] = mef.overlapElement(A,C); */
-      /* } */
-      matrix A = testFunctions[i];
-      for (int j = 0; j < i; j++) {
-        matrix C = testFunctions[j];
-        double element = mef.overlapElement(A,C);
-        B[i,j] = element;
-        B[j,i] = element;
+    for (int i = 0; i < size; i++) {
+      for (int j = 0; j <= i; j++) {
+        double element = 0;
+        List<matrix> permuted_i = new List<matrix>();
+        List<matrix> permuted_j = new List<matrix>();
+        List<int> parities = new List<int>();
+
+        foreach(Permutation p in perms) {
+          permuted_i.Add(permute(testFunctions[i], p));
+          permuted_j.Add(permute(testFunctions[j], p));
+          parities.Add(p.Parity());
+        }
+
+        for (int k = 0; k < permuted_i.Count; k++) {
+          for (int l = 0; l < permuted_j.Count; l++) {
+            int factor = perms[k].Parity() * perms[l].Parity();
+            element += factor * mef.overlapElement(permuted_i[k],permuted_j[l]);
+          }
+        }
+
+        B[i,j] = B[j,i] =  element / Math.Sqrt(perms.Count);
       }
-      B[i,i] = mef.overlapElement(A,A);
     }
+
     return B;
   }
 
   // Generate the matrix H contain matrix elements of kinetic
   // and potential energy combined
+  /* public matrix generateH(List<matrix> testFunctions) { */
+  /*   int size = testFunctions.Count; */
+  /*   matrix H = new matrix(size, size); */
+
+  /*   /1* for (int i=0; i < size; i++) { *1/ */
+  /*   /1*   for (int j=0; j < size; j++) { *1/ */
+  /*   /1*     H[i,j] = mef.matrixElement(testFunctions[i],testFunctions[j]); *1/ */
+  /*   /1*   } *1/ */
+  /*   /1* } *1/ */
+
+  /*   for (int i=0; i < size; i++) { */
+  /*     for (int j=0; j < i; j++) { */
+  /*       // H should be symmetric */
+  /*       double element = mef.matrixElement(testFunctions[i],testFunctions[j]); */
+  /*       H[i,j] = element; */
+  /*       H[j,i] = element; */
+  /*     } */
+  /*     H[i,i] = mef.matrixElement(testFunctions[i],testFunctions[i]); */
+  /*   } */
+  /*   return H; */
+  /* } */
+
+  // Generate H symmetrized
   public matrix generateH(List<matrix> testFunctions) {
     int size = testFunctions.Count;
-    matrix H = new matrix(size, size);
+    List<Permutation> perms = permutations();
+    matrix H = new matrix(size,size);
+    for (int i = 0; i < size; i++) {
+      for (int j = 0; j <= i; j++) {
+        double element = 0;
+        List<matrix> permuted_i = new List<matrix>();
+        List<matrix> permuted_j = new List<matrix>();
+        List<int> parities = new List<int>();
 
-    /* for (int i=0; i < size; i++) { */
-    /*   for (int j=0; j < size; j++) { */
-    /*     H[i,j] = mef.matrixElement(testFunctions[i],testFunctions[j]); */
-    /*   } */
-    /* } */
+        foreach(Permutation p in perms) {
+          permuted_i.Add(permute(testFunctions[i], p));
+          permuted_j.Add(permute(testFunctions[j], p));
+          parities.Add(p.Parity());
+        }
 
-    for (int i=0; i < size; i++) {
-      for (int j=0; j < i; j++) {
-        // H should be symmetric
-        double element = mef.matrixElement(testFunctions[i],testFunctions[j]);
-        H[i,j] = element;
-        H[j,i] = element;
+        for (int k = 0; k < permuted_i.Count; k++) {
+          for (int l = 0; l < permuted_j.Count; l++) {
+            int factor = perms[k].Parity() * perms[l].Parity();
+            element += factor * mef.matrixElement(permuted_i[k],permuted_j[l]);
+          }
+        }
+
+        H[i,j] = H[j,i] = element / Math.Sqrt(perms.Count);
       }
-      H[i,i] = mef.matrixElement(testFunctions[i],testFunctions[i]);
     }
+
     return H;
   }
-
   // Calculate eigen values of system as specified in problem
   public vector eigenValues(List<matrix> testFunctions) {
     vector v = new vector(testFunctions.Count);
@@ -371,7 +444,6 @@ public class SVM {
     matrix L = new CholeskyDecomposition(B).L;
     matrix inv = new QRdecomposition(L).inverse();
     matrix inv_T = new QRdecomposition(L.transpose()).inverse();
-    /* matrix i = inv * H; */
     matrix p = inv * H * inv_T;
     jacobi.eigen(p,v);
     return v;
