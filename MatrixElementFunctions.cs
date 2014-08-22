@@ -11,7 +11,12 @@ public class MEF {
 
   // Calculate matrix element for H matrix
   public double matrixElement(matrix A, matrix B) {
-    return kineticEnergyElement(A,B) + potentialEnergyElement(A,B);
+    /* return kineticEnergyElement(A,B) + potentialEnergyElement(A,B); */
+    double kin = kineticEnergyElement(A,B);
+    double pot = potentialEnergyElement(A,B);
+    /* Console.WriteLine("Kinetic energy element " + kin); */
+    /* Console.WriteLine("Potential energy element " + pot); */
+    return kin + pot;
   }
 
   // Calculate the overlap of two test functions represented by matrices
@@ -22,14 +27,16 @@ public class MEF {
       determinant *= qr.R[i,i];
     }
     double nominator = Math.Pow( 2 * Math.PI, A.cols);
-    return Math.Pow(nominator / determinant, 3/2);
+    return Math.Pow(nominator / determinant, 3.0/2.0);
   }
 
   // Calculates the matrix element for the kinetic energy
   public double kineticEnergyElement(matrix A, matrix B) {
     QRdecomposition qr = new QRdecomposition(A+B);
     matrix inverse = qr.inverse();
-    return 3/2 * (A * inverse * B * problem.getLambda()).trace() * overlapElement(A,B);
+
+    matrix tmp = A * inverse * B * problem.getLambda();
+    return 3.0/2.0 * tmp.trace() * overlapElement(A,B);
   }
 
   // Calculate the matrix element of the potential energy
@@ -50,43 +57,20 @@ public class MEF {
     matrix inverse = new QRdecomposition(A+B).inverse();
     // For every particle pair (only counting once) calculate interaction
     List<Particle> particles = problem.getParticles();
+    matrix Uinv = problem.getUInverse();
     for (int j = 0; j < N; j++) {
       for (int i = 0; i < j; i++) {
         double p_ij = 0;
-        matrix Uinv = problem.getUInverse();
         for (int k = 0; k < N - 1; k++) {
           for (int l = 0; l < N - 1; l++) {
             double b_ijk = Uinv[i,k] - Uinv[j,k];
             double b_ijl = Uinv[i,l] - Uinv[j,l];
             p_ij += b_ijk * inverse[k,l] * b_ijl;
-            /* Console.WriteLine("p_ij = " + p_ij); */
           }
         }
-        /* Console.WriteLine("Using particle " + i + " and " + j); */
-        result += particles[i].getCharge() * particles[j].getCharge() / (4 * Math.PI * epsilon_0) * Math.Sqrt(1 / (2 * p_ij * Math.PI)) * overlapElement(A,B);
-        /* Console.WriteLine("result = " + result); */
+        result +=  particles[i].getCharge() * particles[j].getCharge() / (4 * Math.PI * epsilon_0) * Math.Sqrt(2 / (p_ij * Math.PI)) * overlapElement(A,B);
       }
     }
-    /* for (int i = 0; i < N; i++) { */
-    /*   for(int j = 0; j < N; j++) { */
-    /*     if ( j > i) { */
-    /*       double p_ij = 0; */
-    /*       matrix Uinv = problem.getUInverse(); */
-    /*       for (int k = 0; k < N; k++) { */
-    /*         for (int l = 0; l < N; l++) { */
-    /*           double B_ijk = Uinv[i,k] - Uinv[j,k]; */
-    /*           double B_ijl = Uinv[i,l] - Uinv[j,l]; */
-    /*           p_ij += B_ijk * inverse[k,l] * B_ijl; */
-    /*           /1* Console.WriteLine(p_ij); *1/ */
-    /*         } */
-    /*       } */
-
-    /*       result += particles[i].getCharge() * particles[j].getCharge() / (4 * Math.PI * epsilon_0) * Math.Sqrt( 1 / (2 * p_ij * Math.PI)) * overlapElement(A,B); */
-    /*       Console.WriteLine("Result = " + result); */
-    /*     } */
-    /*   } */
-    /* } */
-    /* Console.WriteLine("Result is now = " + result); */
 
     return result;
   }

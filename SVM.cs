@@ -14,6 +14,29 @@ public class SVM {
     mef = new MEF(problem);
   }
 
+  public void run2(int size, int testsize) {
+    double E0 = double.PositiveInfinity;
+    List<matrix> basis = generateTestFunctions(size);
+    for (int k = 0; k < 1000; k++) {
+      for(int i = 0; i < size; i++) {
+        for (int j = 0; j < testsize; j++) {
+          List<matrix> tmpbasis = new List<matrix>(basis);
+          tmpbasis[i] = generateA();
+          if (validateB(generateB(tmpbasis))) {
+            double low = eigenValues(tmpbasis)[0];
+            if (low < E0) {
+              E0 = low;
+              Console.WriteLine(low);
+              basis = tmpbasis;
+            }
+          } else {
+            Console.WriteLine("Ignored a testfunction");
+          }
+        }
+      }
+    }
+  }
+
   public vector run(int size, int testsize) {
     double E0 = double.PositiveInfinity;
     List<matrix> basis = new List<matrix>();
@@ -25,18 +48,11 @@ public class SVM {
         List<matrix> tmpbasis = new List<matrix>(basis);
         tmpbasis.Add(testfunctions[j]);
         if (validateB(generateB(tmpbasis))){
-        /* try { */
           vector v = eigenValues(tmpbasis);
           if (v[0] < E0) {
             bestBasisSoFar = tmpbasis;
             E0 = v[0];
           }
-        /* } catch (CholeskyException ce) { */
-        /*   Console.WriteLine(ce); */
-        /* } */
-        } else {
-          // Maybe add a new function to try
-          /* testfunctions.AddRange(generateTestFunctions(1)); */
         }
       }
       result[i] = E0;
@@ -60,64 +76,12 @@ public class SVM {
   }
 
 
-  /* public vector run(int reps) { */
-  /*   List<matrix> basis = generateBasis(reps); */
-  /*   int count = 1; */
-  /*   bool changed = false; */
-  /*   double lowestEigen = eigenValues(basis)[0]; */
-  /*   List<double> eigens = new List<double>(); */
-  /*   eigens.Add(lowestEigen); */
-  /*   Console.WriteLine(); */
-  /*   Console.WriteLine("Lowest eigen value is " + lowestEigen); */
-  /*   Console.WriteLine(); */
-  /*   for (int i = 0; i < basis.Count; i++) { */
-  /*     while (!changed) { */
-  /*       List<matrix> tmpbasis = new List<matrix>(basis); */
-  /*       tmpbasis[i] = generateTestFunctions(1)[0]; */
-  /*       if (validateB(generateB(tmpbasis))) { */
-  /*         double energy = eigenValues(tmpbasis)[0]; */
-  /*         if (energy < lowestEigen) { */
-  /*           changed = true; */
-  /*           lowestEigen = energy; */
-  /*           basis = tmpbasis; */
-  /*           Console.WriteLine("Changed"); */
-  /*           eigens.Add(energy); */
-  /*         } */
-  /*       } */
-  /*       count++; */
-  /*     } */
-  /*     changed = false; */
-  /*   } */
-
-  /*   Console.WriteLine("Number of trial functions = " + count); */
-
-  /*   vector v = new vector(eigens.Count); */
-  /*   for (int i = 0; i < eigens.Count; i++) { */
-  /*     v[i] = eigens[i]; */
-  /*   } */
-  /*   return v; */
-  /* } */
-
-  // Generate a basis which can be cholesky factorised
-  /* public List<matrix> generateBasis(int size) { */
-  /*   List<matrix> basis = generateTestFunctions(1); */
-  /*   while(basis.Count < size) { */
-  /*     List<matrix> tmpbasis = new List<matrix>(basis); */
-  /*     tmpbasis.Add(generateTestFunctions(1)[0]); */
-  /*     matrix B = generateB(tmpbasis); */
-  /*     if (validateB(B)) { */
-  /*       basis = tmpbasis; */
-  /*     } */
-  /*   } */
-  /*   return basis; */
-  /* } */
-
   // Ensure the eigenvalues of B are greater than 0.01
   // to prevent too much correlation of basis functions
   public bool validateB(matrix B) {
     vector v = new vector(B.cols);
     jacobi.eigen(B.copy(),v);
-    /* if (v[0] > 0.1) { */
+    /* if (v[0] > 0.01) { */
       try {
         new CholeskyDecomposition(B);
         return true;
@@ -125,6 +89,9 @@ public class SVM {
         Console.WriteLine(e);
         return false;
       }
+    /* } else { */
+    /*   B.print(); */
+    /*   Console.WriteLine("Eigenvalue " + v[0] + " is not large enough"); */
     /* } */
     /* return false; */
   }
@@ -136,9 +103,6 @@ public class SVM {
     List<double> alphas = makeAlphas();
     // Generate values for every entry in the matrix A
     for (int k = 0; k < nParticles - 1; k++) {
-      /* for (int l = 0; l < nParticles - 1; l++) { */
-      /*   A[k,l] = A_kl(k,l,alphas); */
-      /* } */
       for (int l = 0; l < k; l++) {
         double akl = A_kl(k,l,alphas);
         A[l,k] = akl;
@@ -158,7 +122,11 @@ public class SVM {
 
     // Prepare randdom values
     for (int i = 0; i < nParticles * (nParticles - 1) / 2; i++) {
-      alphas.Add( r.NextDouble() * (max - min) + min);
+      double rateParam = -1 * (max - min);
+      double rand = Math.Log(1 - r.NextDouble()) / rateParam;
+      /* Console.WriteLine(rand); */
+      alphas.Add(rand);
+      /* alphas.Add( r.NextDouble() * (max - min) + min); */
     }
 
     return alphas;
@@ -168,25 +136,18 @@ public class SVM {
   public double A_kl(int k, int l, List<double> alphas) {
     double result = 0;
 
+
     matrix U_inv = problem.getUInverse(); // Get the inverse U matrix
     List<double> products = new List<double>();
-    double B_ijk = 0;
-    double B_ijl = 0;
-    int count = 0;
 
-    for (int i = 0; i < nParticles; i++) {
-      for (int j = 0; j < nParticles; j++) {
-        if ( j > i) {
-          B_ijk = U_inv[i,k] - U_inv[j,k];
-          B_ijl = U_inv[i,l] - U_inv[j,l];
-          products.Add(B_ijk * B_ijl);
-          count++;
-        }
+
+    for (int j = 0; j < U_inv.cols; j++) {
+      for (int i = 0; i < j; i++) {
+        products.Add((U_inv[i,k] - U_inv[j,k]) * (U_inv[i,l] - U_inv[j,l]));
       }
     }
 
-    // Calculate the element based on random values and U_inv matrix
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < alphas.Count; i++) {
       result += alphas[i] * products[i];
     }
 
@@ -245,66 +206,6 @@ public class SVM {
     return lp;
   }
 
-
-  // Symmetrize a matrix so that there is anti symmetry on swapping
-  // indistinguishable fermions and symmetry on swapping indistinguishable
-  // bosons
-  public matrix symmetrize(matrix A) {
-    // Generate permutations of particles
-    /* List<int> perm = new List<int>(); */
-    /* for (int i = 0; i < nParticles; i++){ */
-    /*   perm.Add(i); */
-    /* } */
-
-    // Make a list with 1 permutation. It will be used for getting permutations of
-    /* List<Permutation> ll = new List<Permutation>(); */
-    /* ll.Add(new Permutation(perm,1,-1)); // fermions */
-
-    matrix result = new matrix(A.rows,A.cols);
-
-    foreach (Permutation ps in permutations()) {
-      // Generate C_i according to the permutation and transform to jacobi
-      matrix Ci = generateC(ps.ToArray());
-      matrix tmp = problem.getUInverse() * Ci * problem.getU();
-      /* matrix tmp = problem.getUInverse().transpose() * Ci * problem.getU(); */
-      /* matrix tmp = problem.getU().transpose() * Ci * problem.getU(); */
-      matrix Pi = new matrix(A.rows, A.cols);
-
-      // Remove last row and column from matrix
-      for(int i = 0; i < A.rows; i++) {
-        for(int j = 0; j < A.cols; j++) {
-         Pi[i,j] = tmp[i,j];
-        }
-      }
-
-      /* Console.WriteLine("Pi = "); */
-      /* Pi.print(); */
-
-      int[] permus = ps.ToArray();
-      matrix Tp = new matrix(A.rows,A.cols);
-      for(int i = 0; i < Tp.rows; i++) {
-        for(int j = 0; j < Tp.cols; j++) {
-          double entry = 0;
-          matrix U = problem.getU();
-          matrix U_inv = problem.getUInverse();
-          for(int k = 0; k < permus.Length; k++) {
-            entry += U[i,k]*U_inv[permus[k],j];
-          }
-          Tp[i,j] = entry;
-        }
-      }
-      /* Console.WriteLine("Tp = "); */
-      /* Tp.print(); */
-
-
-      // There might be an issue with size here
-      /* result += ps.Parity() * (Pi.transpose() *A * Pi); */
-      result += ps.Parity() * (Tp.transpose() * A * Tp.transpose());
-    }
-
-    return 1/Math.Sqrt(Misc.factorial(A.rows)) * result;
-  }
-
   // Generate a matrix representing the given permutation
   public matrix generateC(int[] permutation) {
     int length = permutation.Length;
@@ -324,42 +225,18 @@ public class SVM {
   public List<matrix> generateTestFunctions(int number) {
     List<matrix> testFunctions = new List<matrix>();
     for (int i=0; i < number; i++) {
-      // TODO symmetriseringen virker ikke...
-      /* matrix a = symmetrize(generateA()); */
-      matrix a = generateA();
-      testFunctions.Add(a);
+      testFunctions.Add(generateA());
     }
-
     return testFunctions;
   }
 
-  // Generate the matrix B based on the given test functions
-/* public matrix generateB(List<matrix> testFunctions) { */
-  /*   int size = testFunctions.Count; */
-  /*   matrix B = new matrix(size,size); */
-  /*   for(int i = 0; i < size; i++) { */
-  /*     /1* for (int j = 0; j < size; j++) { *1/ */
-  /*     /1*   matrix A = testFunctions[i]; *1/ */
-  /*     /1*   matrix C = testFunctions[j]; *1/ */
-  /*     /1*   B[i,j] = mef.overlapElement(A,C); *1/ */
-  /*     /1* } *1/ */
-  /*     matrix A = testFunctions[i]; */
-  /*     for (int j = 0; j < i; j++) { */
-  /*       matrix C = testFunctions[j]; */
-  /*       double element = mef.overlapElement(A,C); */
-  /*       B[i,j] = element; */
-  /*       B[j,i] = element; */
-  /*     } */
-  /*     B[i,i] = mef.overlapElement(A,A); */
-  /*   } */
-  /*   return B; */
-  /* } */
 
 
   // Generate B symmetrized
   public matrix generateB(List<matrix> testFunctions) {
     int size = testFunctions.Count;
     List<Permutation> perms = permutations();
+    /* Console.WriteLine("There are " + perms.Count + " permutations"); */
     matrix B = new matrix(size,size);
     for (int i = 0; i < size; i++) {
       for (int j = 0; j <= i; j++) {

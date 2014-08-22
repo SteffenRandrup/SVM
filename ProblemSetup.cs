@@ -16,13 +16,13 @@ public class ProblemSetup
   public ProblemSetup () {
     // Proton
     particles.Add(new Particle(1846,1,1/2.0));
-    /* particles.Add(new Particle(1,1,3/2)); */
+    /* particles.Add(new Particle(1,1,3/2.0)); */
     // Electron
     particles.Add(new Particle(1,-1,1/2.0));
     /* particles.Add(new Particle(5.485*Math.Pow(10,-4), -1, 1/2)); */
     /* particles.Add(new Particle(5.485*Math.Pow(10,-4), -1, 1/2)); */
-    min = 0.1;
-    max = 2;
+    min = 0;
+    max = 20;
     setup();
   }
 
