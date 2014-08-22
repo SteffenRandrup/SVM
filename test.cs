@@ -14,7 +14,7 @@ public class TestSVM {
     double[] masses = {1,1,1};
     int[] charges = {-1,-1,1};
     double[] spins = {1/2.0,1/2.0,1/2.0};
-    problem = new ProblemSetup(masses,charges,spins,0.0,2.0);
+    problem = new ProblemSetup(masses,charges,spins,0.0,20);
     svm = new SVM(problem);
     testfunctions = svm.generateTestFunctions(3);
     mef = new MEF(problem);
@@ -72,33 +72,46 @@ public class TestSVM {
 
   [Test]
   public void Test_kinetic_energy_element() {
-    matrix A = new matrix("0.27942,0.10933;0.10933,0.47448");
-    matrix B = new matrix("0.45648,0.03761;0.03761,0.85069");
-    /* Assert.AreEqual(98.4152907127796,mef.kineticEnergyElement(A,B)); */
-    double test = 32.805096904259862; // Remembered /2
-    Assert.AreEqual(test,mef.kineticEnergyElement(A,B));
+    matrix A = new matrix("2.0,0.3;0.3,4.8");
+    matrix B = new matrix("6.7,4.2;4.2,0.8");
+    double overlap = 1.6328955457275554;
+    double trace = 0.046013347383209613;
+    double ans = Math.Round(3.0/2.0 * trace * overlap, 14);
+    double result = Math.Round(mef.kineticEnergyElement(A,B), 14);
+    Assert.AreEqual(ans,result);;
   }
 
   [Test]
-  [Ignore("Should be updated to give negative values")]
+  [Ignore("The test is pretty inaccurate...")]
   public void Test_coulomb_energy_element() {
-    matrix A = new matrix("0.27942,0.10933;0.10933,0.47448");
-    matrix B = new matrix("0.45648,0.03761;0.03761,0.85069");
-    Assert.AreEqual(1.1149123785677297,mef.coulombPotentialEnergy(A,B));
+    matrix A = new matrix("2.0,0.3;0.3,4.8");
+    matrix B = new matrix("6.7,4.2;4.2,0.8");
+    double V12 = -0.1431627118230019 * mef.overlapElement(A,B);
+    double V13 =  0.1431627118230019 * mef.overlapElement(A,B);
+    double V23 = -0.0881622593246209 * mef.overlapElement(A,B);
+    double result = mef.coulombPotentialEnergy(A,B);
+    double ans = V12 + V13 + V23;
+    Assert.AreEqual(ans,result);
   }
 
-  /* [Test] */
-  /* [Ignore("not implemented yet")] */
-  /* public void Test_gaussian_potential_element() { */
-  /*   Assert.IsTrue(false); */
-  /* } */
 
+  // Rounding is bad in testing....
   [Test]
   public void Test_overlap_element() {
-    matrix A = new matrix("0.27942,0.10933;0.10933,0.47448");
-    matrix B = new matrix("0.45648,0.03761;0.03761,0.85069");
-    double ans = 41.399293513079961;
-    Assert.AreEqual(ans,mef.overlapElement(A,B));
+    matrix A = new matrix("2.0,0.3;0.3,4.8");
+    matrix B = new matrix("6.7,4.2;4.2,0.8");
+    double ans = 1.6328955457275554;
+    double result = mef.overlapElement(A,B);
+    Assert.AreEqual(Math.Round(ans,13),Math.Round(result,13));
+  }
+
+  [Test]
+  public void Test_overlap_element_2() {
+    matrix A = new matrix("3.0");
+    matrix B = new matrix("2.5");
+    double ans = 1.221028408275333;
+    double result = mef.overlapElement(A,B);
+    Assert.AreEqual(Math.Round(ans, 10), Math.Round(result, 10));
   }
 
   [Test]
@@ -245,27 +258,43 @@ public class TestSVM {
 
   [Test]
   public void ZZZRUN(){
-    /* svm.run(20,50).print(); */
-    // positronium ground state energy -0.249
-    double[] masses = {1,1};
-    int[] charges = {-1,1};
-    double[] spins = {1.0/2,1.0/2};
-    ProblemSetup p = new ProblemSetup(masses,charges,spins,0,5);
-    SVM svm2 = new SVM(p);
-    /* for(int i = 0; i < 10; i++) { */
-    /*   List<matrix> testf = svm2.generateTestFunctions(10); */
-    /*   matrix B = svm2.generateB(testf); */
-    /*   /1* B.print(); *1/ */
-    /*   matrix L = new CholeskyDecomposition(B).L; */
-    /*   /1* L.print(); *1/ */
-    /*   matrix H = svm2.generateH(testf); */
-    /*   /1* H.print(); *1/ */
-    /*   vector eigs = svm2.eigenValues(testf); */
-    /*   Console.WriteLine(); */
-    /*   eigs.print(); */
-    /*   Console.WriteLine(); */
-    /* } */
-    /* Console.WriteLine(); */
-    svm2.run(25,50).print();
+    runHydrogen();
+    /* runPositronium(); */
+    /* runBEigenvalues(); */
+  }
+
+  public void runHydrogen() {
+    double[] massh = {1837.47,1};
+    int[] chargeh = {1,-1};
+    double[] spinh = {1.0/2,1.0/2};
+    ProblemSetup problemh = new ProblemSetup(massh,chargeh,spinh,0,20);
+    SVM svmh = new SVM(problemh);
+    Console.WriteLine();
+    svmh.run2(5,100);
+  }
+
+  public void runPositronium() {
+    double[] massh = {1,1};
+    int[] chargeh = {1,-1};
+    double[] spinh = {1.0/2,1.0/2};
+    ProblemSetup problemh = new ProblemSetup(massh,chargeh,spinh,0,20);
+    SVM svmh = new SVM(problemh);
+    Console.WriteLine();
+    svmh.run2(5,100);
+  }
+
+  public void runBEigenvalues() {
+    double[] massh = {1,1};
+    int[] chargeh = {1,-1};
+    double[] spinh = {1.0/2,1.0/2};
+    ProblemSetup problemh = new ProblemSetup(massh,chargeh,spinh,0,20);
+    SVM svmh = new SVM(problemh);
+    matrix B = svmh.generateB(svmh.generateTestFunctions(5));
+    B.print();
+    Console.WriteLine();
+    vector v = new vector(B.cols);
+    jacobi.eigen(B,v);
+    v.print();
   }
 }
+
