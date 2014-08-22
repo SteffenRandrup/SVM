@@ -68,7 +68,8 @@ public class MEF {
             p_ij += b_ijk * inverse[k,l] * b_ijl;
           }
         }
-        result +=  particles[i].getCharge() * particles[j].getCharge() / (4 * Math.PI * epsilon_0) * Math.Sqrt(2 / (p_ij * Math.PI)) * overlapElement(A,B);
+        /* result +=  particles[i].getCharge() * particles[j].getCharge() / (4 * Math.PI * epsilon_0) * Math.Sqrt(2 / (p_ij * Math.PI)) * overlapElement(A,B); */
+        result +=  particles[i].getCharge() * particles[j].getCharge() * 2.0 / epsilon_0 * Math.Sqrt(1/(p_ij * Math.PI * 2)) * overlapElement(A,B);
       }
     }
 
