@@ -14,10 +14,16 @@ public class SVM {
     mef = new MEF(problem);
   }
 
-  public void run2(int size, int testsize) {
+  public List<double> run2(int size, int testsize) {
     double E0 = double.PositiveInfinity;
+    List<double> results = new List<double>();
     List<matrix> basis = generateTestFunctions(size);
-    for (int k = 0; k < 1000; k++) {
+    bool converged = false;
+    int count = 0;
+    double difference = double.PositiveInfinity;
+    double tolerance = Math.Pow(10,-6);
+    /* for (int k = 0; k < 1000; k++) { */
+    while(!converged) {
       for(int i = 0; i < size; i++) {
         for (int j = 0; j < testsize; j++) {
           List<matrix> tmpbasis = new List<matrix>(basis);
@@ -25,16 +31,25 @@ public class SVM {
           if (validateB(generateB(tmpbasis))) {
             double low = eigenValues(tmpbasis)[0];
             if (low < E0) {
+              difference = Math.Abs((E0 - low)/E0);
               E0 = low;
               Console.WriteLine(low);
               basis = tmpbasis;
+              results.Add(low);
+              if(difference > tolerance) {
+                count = 0;
+              }
             }
           } else {
             Console.WriteLine("Ignored a testfunction");
           }
+          /* results.Add(E0); */
         }
       }
+      if (count > 500) {converged = true;}
+      count++;
     }
+    return results;
   }
 
   public vector run(int size, int testsize) {
@@ -85,8 +100,7 @@ public class SVM {
       try {
         new CholeskyDecomposition(B);
         return true;
-      } catch (CholeskyException e) {
-        Console.WriteLine(e);
+      } catch (CholeskyException) {
         return false;
       }
     /* } else { */

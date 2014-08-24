@@ -260,7 +260,7 @@ public class TestSVM {
   [Test]
   public void ZZZRUN(){
     /* runHydrogen(); */
-    runPositronium();
+    /* runPositronium(); */
     /* runBEigenvalues(); */
   }
 

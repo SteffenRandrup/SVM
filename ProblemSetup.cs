@@ -15,12 +15,9 @@ public class ProblemSetup
 
   public ProblemSetup () {
     // Proton
-    particles.Add(new Particle(1846,1,1/2.0));
-    /* particles.Add(new Particle(1,1,3/2.0)); */
+    particles.Add(new Particle(1837.47,1,1/2.0));
     // Electron
-    particles.Add(new Particle(1,-1,1/2.0));
-    /* particles.Add(new Particle(5.485*Math.Pow(10,-4), -1, 1/2)); */
-    /* particles.Add(new Particle(5.485*Math.Pow(10,-4), -1, 1/2)); */
+    particles.Add(new Particle(1.0,-1,1/2.0));
     min = 0;
     max = 20;
     setup();
@@ -56,8 +53,8 @@ public class ProblemSetup
       min = double.Parse(lines[3].Split(',')[0].Trim());
       max = double.Parse(lines[3].Split(',')[1].Trim());
     } else {
-      min = 0.1;
-      max = 1.5;
+      min = 0;
+      max = 20;
     }
     if (masses.Count == charges.Count && masses.Count == spin.Count) {
       for(int i = 0; i < masses.Count; i++) {

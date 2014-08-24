@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 class MainClass {
 
@@ -11,16 +12,14 @@ class MainClass {
     SVM svm; // Class handling all aspects of SVM
     String filename = "result.txt";
     if (args.Length == 0) {
-      /* svm = new SVM(new ProblemSetup("hydrogen.txt")); */
       svm = new SVM(new ProblemSetup());
     } else {
       svm = new SVM(new ProblemSetup(args[0]));
     }
-    vector v = svm.run(20,20);
-    v.print();
+    List<double> v = svm.run2(5,100);
     String forprint = "";
-    for(int i = 0; i < v.size; i++) {
-      forprint += v[i] + "\n";
+    foreach(double res in v) {
+      forprint += res + "\n";
     }
 
     System.IO.StreamWriter file = new System.IO.StreamWriter(filename);
