@@ -46,8 +46,14 @@ public class ProblemSetup
     foreach(string q in lines[1].Split(',')) {
       charges.Add(int.Parse(q.Trim()));
     }
-    foreach(string s in lines[2].Split(',')) {
-      spin.Add(double.Parse(s.Trim()));
+    if (lines.Length > 2) {
+      foreach(string s in lines[2].Split(',')) {
+        spin.Add(double.Parse(s.Trim()));
+      }
+    } else {
+      foreach(int i in charges) {
+        spin.Add(0);
+      }
     }
     if (lines.Length == 4) {
       min = double.Parse(lines[3].Split(',')[0].Trim());
