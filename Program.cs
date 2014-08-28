@@ -16,7 +16,7 @@ class MainClass {
     } else {
       svm = new SVM(new ProblemSetup(args[0]));
     }
-    List<double> v = svm.run2(5,100);
+    List<double> v = svm.run2(50,100);
     String forprint = "";
     foreach(double res in v) {
       forprint += res + "\n";

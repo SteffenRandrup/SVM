@@ -7,11 +7,13 @@ public class SVM {
   private int nParticles;
   private Random r = new Random();
   private MEF mef;
+  List<Permutation> perms;
 
   public SVM(ProblemSetup problem) {
     this.problem = problem;
     nParticles = problem.getNumberOfParticles();
     mef = new MEF(problem);
+    /* perms = permutations(); */
   }
 
   public List<double> run2(int size, int testsize) {
@@ -21,7 +23,7 @@ public class SVM {
     bool converged = false;
     int count = 0;
     double difference = double.PositiveInfinity;
-    double tolerance = Math.Pow(10,-6);
+    double tolerance = Math.Pow(10,-3);
     /* for (int k = 0; k < 1000; k++) { */
     while(!converged) {
       for(int i = 0; i < size; i++) {
@@ -67,6 +69,7 @@ public class SVM {
           if (v[0] < E0) {
             bestBasisSoFar = tmpbasis;
             E0 = v[0];
+            Console.WriteLine(E0);
           }
         }
       }
@@ -112,20 +115,36 @@ public class SVM {
 
   // Generate matrix containing non-linear parameters for the gaussian test
   // functions transformed to center of mass system
-  public matrix generateA() {
-    matrix A = new matrix(nParticles - 1, nParticles -1);
-    List<double> alphas = makeAlphas();
-    // Generate values for every entry in the matrix A
-    for (int k = 0; k < nParticles - 1; k++) {
-      for (int l = 0; l < k; l++) {
-        double akl = A_kl(k,l,alphas);
-        A[l,k] = akl;
-        A[k,l] = akl;
-      }
-      A[k,k] = A_kl(k,k,alphas);
-    }
+  /* public matrix generateA() { */
+  /*   matrix A = new matrix(nParticles - 1, nParticles -1); */
+  /*   List<double> alphas = makeAlphas(); */
+  /*   // Generate values for every entry in the matrix A */
+  /*   for (int k = 0; k < nParticles - 1; k++) { */
+  /*     for (int l = 0; l < k; l++) { */
+  /*       double akl = A_kl(k,l,alphas); */
+  /*       A[l,k] = akl; */
+  /*       A[k,l] = akl; */
+  /*     } */
+  /*     A[k,k] = A_kl(k,k,alphas); */
+  /*   } */
 
-    return A;
+  /*   return A; */
+  /* } */
+
+  public matrix generateA() {
+    matrix A = new matrix(nParticles - 1, nParticles - 1);
+    matrix B = new matrix(A.rows,A.cols);
+    for (int i = 0; i < A.cols; i++) {
+      for (int j = 0; j < A.cols; j++) {
+        if (i == j) {
+          A[i,j] = Math.Log(1-r.NextDouble())/-1;
+        }
+        B[i,j] = Math.Log(1-r.NextDouble())/-1;
+      }
+    }
+    matrix Q = new QRdecomposition(B).Q;
+
+    return Q * A * Q.transpose();
   }
 
   public List<double> makeAlphas() {
@@ -245,11 +264,26 @@ public class SVM {
   }
 
 
-
-  // Generate B symmetrized
   public matrix generateB(List<matrix> testFunctions) {
     int size = testFunctions.Count;
-    List<Permutation> perms = permutations();
+    matrix H = new matrix(size, size);
+
+    for (int i=0; i < size; i++) {
+      for (int j=0; j < i; j++) {
+        // H should be symmetric
+        double element = mef.overlapElement(testFunctions[i],testFunctions[j]);
+        H[i,j] = element;
+        H[j,i] = element;
+      }
+      H[i,i] = mef.overlapElement(testFunctions[i],testFunctions[i]);
+    }
+    return H;
+  }
+
+  // Generate B symmetrized
+  public matrix generateB2(List<matrix> testFunctions) {
+    int size = testFunctions.Count;
+    /* List<Permutation> perms = permutations(); */
     /* Console.WriteLine("There are " + perms.Count + " permutations"); */
     matrix B = new matrix(size,size);
     for (int i = 0; i < size; i++) {
@@ -281,32 +315,26 @@ public class SVM {
 
   // Generate the matrix H contain matrix elements of kinetic
   // and potential energy combined
-  /* public matrix generateH(List<matrix> testFunctions) { */
-  /*   int size = testFunctions.Count; */
-  /*   matrix H = new matrix(size, size); */
-
-  /*   /1* for (int i=0; i < size; i++) { *1/ */
-  /*   /1*   for (int j=0; j < size; j++) { *1/ */
-  /*   /1*     H[i,j] = mef.matrixElement(testFunctions[i],testFunctions[j]); *1/ */
-  /*   /1*   } *1/ */
-  /*   /1* } *1/ */
-
-  /*   for (int i=0; i < size; i++) { */
-  /*     for (int j=0; j < i; j++) { */
-  /*       // H should be symmetric */
-  /*       double element = mef.matrixElement(testFunctions[i],testFunctions[j]); */
-  /*       H[i,j] = element; */
-  /*       H[j,i] = element; */
-  /*     } */
-  /*     H[i,i] = mef.matrixElement(testFunctions[i],testFunctions[i]); */
-  /*   } */
-  /*   return H; */
-  /* } */
-
-  // Generate H symmetrized
   public matrix generateH(List<matrix> testFunctions) {
     int size = testFunctions.Count;
-    List<Permutation> perms = permutations();
+    matrix H = new matrix(size, size);
+
+    for (int i=0; i < size; i++) {
+      for (int j=0; j < i; j++) {
+        // H should be symmetric
+        double element = mef.matrixElement(testFunctions[i],testFunctions[j]);
+        H[i,j] = element;
+        H[j,i] = element;
+      }
+      H[i,i] = mef.matrixElement(testFunctions[i],testFunctions[i]);
+    }
+    return H;
+  }
+
+  // Generate H symmetrized
+  public matrix generateH2(List<matrix> testFunctions) {
+    int size = testFunctions.Count;
+    /* List<Permutation> perms = permutations(); */
     matrix H = new matrix(size,size);
     for (int i = 0; i < size; i++) {
       for (int j = 0; j <= i; j++) {
@@ -334,6 +362,8 @@ public class SVM {
 
     return H;
   }
+
+
   // Calculate eigen values of system as specified in problem
   public vector eigenValues(List<matrix> testFunctions) {
     vector v = new vector(testFunctions.Count);
@@ -349,5 +379,45 @@ public class SVM {
     /*   Console.WriteLine(ce); */
     /* } */
     return v;
+  }
+
+  public void runSymHelium() {
+    double E0 = double.PositiveInfinity;
+    int size = 30;
+    List<matrix> basis = generateTestFunctions(size);
+    List<Permutation> p = new List<Permutation>();
+    List<int> l1 = new List<int>(); l1.Add(0); l1.Add(1); l1.Add(2);
+    List<int> l2 = new List<int>(); l2.Add(1); l2.Add(0); l2.Add(2);
+    p.Add(new Permutation(l1, 1, 1));
+    p.Add(new Permutation(l2, -1, 1));
+    perms = p;
+
+    for (int k = 0; k < 1000; k++) {
+      for (int i = 0; i < size; i++) {
+        for (int j = 0; j < 100 ; j++) {
+          List<matrix> tmpbasis = new List<matrix>(basis);
+          tmpbasis[i] = generateA();
+          if (validateB(generateB2(tmpbasis))) {
+            vector v = new vector(tmpbasis.Count);
+            matrix L = new CholeskyDecomposition(generateB2(tmpbasis)).L;
+            matrix inv = new QRdecomposition(L).inverse();
+            matrix inv_T = new QRdecomposition(L.transpose()).inverse();
+            matrix h = generateH2(tmpbasis);
+            matrix m = inv * h * inv_T;
+            jacobi.eigen(m,v);
+            double low = v[0];
+            if (low < E0) {
+              E0 = low;
+              basis = tmpbasis;
+              Console.WriteLine(E0);
+              if (E0 < -2.2) {
+                h.print();
+              }
+            }
+          }
+        }
+      }
+    }
+
   }
 }

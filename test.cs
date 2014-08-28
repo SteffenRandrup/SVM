@@ -261,14 +261,15 @@ public class TestSVM {
   public void ZZZRUN(){
     /* runHydrogen(); */
     /* runPositronium(); */
-    /* runBEigenvalues(); */
+    /* runHelium(); */
+    runSymHelium();
   }
 
   public void runHydrogen() {
     double[] massh = {1837.47,1};
     int[] chargeh = {1,-1};
     double[] spinh = {1.0/2,1.0/2};
-    ProblemSetup problemh = new ProblemSetup(massh,chargeh,spinh,0,20);
+    ProblemSetup problemh = new ProblemSetup(massh,chargeh,spinh,0,1);
     SVM svmh = new SVM(problemh);
     Console.WriteLine();
     svmh.run2(5,100);
@@ -278,24 +279,24 @@ public class TestSVM {
     double[] massh = {1,1};
     int[] chargeh = {1,-1};
     double[] spinh = {1.0/2,1.0/2};
-    ProblemSetup problemh = new ProblemSetup(massh,chargeh,spinh,0,20);
+    ProblemSetup problemh = new ProblemSetup(massh,chargeh,spinh,0,1);
     SVM svmh = new SVM(problemh);
     Console.WriteLine();
     svmh.run2(5,100);
   }
 
-  public void runBEigenvalues() {
-    double[] massh = {1,1};
-    int[] chargeh = {1,-1};
-    double[] spinh = {1.0/2,1.0/2};
-    ProblemSetup problemh = new ProblemSetup(massh,chargeh,spinh,0,20);
+  public void runHelium() {
+    ProblemSetup problemh = new ProblemSetup("helium.txt");
     SVM svmh = new SVM(problemh);
-    matrix B = svmh.generateB(svmh.generateTestFunctions(5));
-    B.print();
     Console.WriteLine();
-    vector v = new vector(B.cols);
-    jacobi.eigen(B,v);
-    v.print();
+    svmh.run2(10,100);
+  }
+
+  public void runSymHelium() {
+    ProblemSetup problemh = new ProblemSetup("helium.txt");
+    SVM svmh = new SVM(problemh);
+    Console.WriteLine();
+    svmh.runSymHelium();
   }
 }
 
